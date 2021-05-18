@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "This library is base on 'newman-reporter-csv'",
+  "name": "newman-reporter-csvallinone",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pepsizerosugar/newman-reporter-csvallinone.git"
+  },
+  "author": {
+    "name": "Park Jun-beom",
+    "ema,il": "juntiger53@gmail.com"
+  },
+
+  "keywords": [
+    "newman",
+    "reporter",
+    "csv",
+    "postman",
+    "curl",
+    "request",
+    "response",
+    "QA",
+    "API",
+    "Test",
+    "Automation"
+  ],
+
+  "main": "index.js",
+
+  "devDependencies": {
+    "standard": "^14.3.3",
+    "chalk": "^4.1.0",
+    "cli-progress": "^3.8.2",
+    "lodash": "^4.17.20"
+  }
+}
