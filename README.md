@@ -3,7 +3,8 @@
 
 * CSV Result File generator module for newman.
 * 하나의 CSV 파일에 모든 정보를 담은 newman Reporter입니다.
-* !!---This module is based on REST API Automation Test---!!!
+* !!---This module is based on REST API Automation Test---!!
+* !!---This module has a dependency on 'newman' module---!!
 <br><br>
 
 ## 1. Getting Started
