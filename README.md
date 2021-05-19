@@ -48,7 +48,7 @@ ex) --reporter-csvallinone-export ./APITest/TestResult/CSV/******.csv
 |12| executedTest  | Pass Assertion that you set at test script | subStatus must be '1'
 |13| failedTest  | Fail Assertion that you set at test script | errorCode must be '1'
 |14| skippedTest  | Skiped Assertion that you set at test script | errorMessage must be 'Ok'
-|15| assertionMessage  | Assertion message for fail TestCase | Expect errorCode '1' but get '0'
+|15| assertionMessage  | Assertion message for fail TestCase | Expected errorCode '1' but got '0'
 |16| curl  | cURL of each TestCase (can immediately run at terminal  | curl --location --request PUT "market.com/v1/subscribe"...
 ### 2-2. Remove unwanted columns
 * You can edit 'columns' variable in 'index.js' for remove unwanted colums
