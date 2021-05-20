@@ -1,15 +1,19 @@
 {
   "version": "1.0.0",
   "license": "MIT",
-  "description": "This library is base on 'newman-reporter-csv'",
+  "description": "CSV Result File generator module for newman",
   "name": "newman-reporter-csvallinone",
+  "homepage": "https://github.com/pepsizerosugar/newman-reporter-csvallinone#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/pepsizerosugar/newman-reporter-csvallinone.git"
   },
   "author": {
     "name": "Park Jun-beom",
-    "ema,il": "juntiger53@gmail.com"
+    "email": "juntiger53@gmail.com"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
 
   "keywords": [
@@ -28,7 +32,13 @@
 
   "main": "index.js",
 
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "cli-progress": "^3.8.2"
+  },
+
   "devDependencies": {
+    "newman": "^5.2.3",
     "standard": "^14.3.3",
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2",

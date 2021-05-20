@@ -29,24 +29,18 @@ const columns = [
   'assertionMessage',
 
   // case curl
-  'curl'
+  'curl',
+
+  // optional column
+  // 'casePrerequest'
 ]
+
+let collName = ""
 
 const CSV = {
   stringify: (str) => {
     return `"${str.replace(/"/g, '""')}"`
   }
-}
-
-const getFullName = (item, separator) => {
-  if (_.isEmpty(item) || !_.isFunction(item.parent) || !_.isFunction(item.forEachParent)) { return; }
-
-  var chain = [];
-
-  item.forEachParent(function (parent) { chain.unshift(parent.name || parent.id); });
-  item.parent() && chain.push(item.name || item.id); // Add the current item only if it is not the collection
-
-  return chain.join(_.isString(separator) ? separator : SEP);
 }
 
 /**
@@ -60,7 +54,7 @@ const getFullName = (item, separator) => {
 module.exports = function newmanCSVaioReporter (newman, options) {
 
   var bar = new progress.Bar({
-    format: '===  Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s  ===',
+    format: '== Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s ==',
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true
@@ -85,15 +79,17 @@ module.exports = function newmanCSVaioReporter (newman, options) {
     if (err || !e.item.name) return
     const { cursor, item, request } = e
 
+    collName = newman.summary.collection.name
+
     Object.assign(log, {
       collectionName: newman.summary.collection.name,
       iteration: cursor.iteration + 1,
       caseName: item.name,
       requestMethod: request.method,
-      requestUrl: request.url.toString(),
-      fullName: getFullName(item, '/'),
+      requestUrl: request.url.toString()
     })
 
+    // bodyType check
     try {
       if(request.hasOwnProperty('body') && JSON.stringify(request.body[request.body.mode]).length > 2){
         if(request.body.mode === "urlencoded")
@@ -103,7 +99,7 @@ module.exports = function newmanCSVaioReporter (newman, options) {
       }
     } catch (error) {console.log("error : " + item.name + "\n" + JSON.stringify(request))}    
 
-    // curl
+    // make curl
     try{
       var curlUrl, curlHeader, curlBody
       curlHeader = ""
@@ -138,37 +134,31 @@ module.exports = function newmanCSVaioReporter (newman, options) {
   })
 
   // pre-script collection, folder, case
-  // newman.on('prerequest', (err, e) => {
-  //   if (err || !e.item) return
+  newman.on('prerequest', (err, e) => {
+    if (err || !e.item) return
 
-  //   const { executions } = e
+    const { executions } = e
 
-  //   if (JSON.stringify(executions[2]) !== undefined){
-  //     Object.assign(log, {
-  //       casePrerequest: JSON.stringify(executions[2].script.exec)
-  //     })
-  //   }
-  //   else{
-  //     Object.assign(log, {
-  //       casePrerequest: null
-  //     })
-  //   }
-  // })
+    if (JSON.stringify(executions[2]) !== undefined){
+      Object.assign(log, {
+        casePrerequest: JSON.stringify(executions[2].script.exec)
+      })
+    }
+    else{
+      Object.assign(log, {
+        casePrerequest: null
+      })
+    }
+  })
 
   newman.on('request', (err, e) => {
 
-    if (err || !e.item) return
+    if (err || !e.item.name) return
 
     const { status, code, responseTime, responseSize, stream } = e.response
     Object.assign(log, { responseStatus: status, responseCode: code, responseTime, responseSize })
-    Object.assign(log, { responseBody: stream.toString() })
+    Object.assign(log, { responseBody: stream.toString() }) 
     
-    try {
-      const bodyJson = JSON.parse(stream.toString())
-      const statusCode = bodyJson.headerRs.statusCode
-      Object.assign(log, { statusCode })
-    } catch (e) {}    
-
     try {
       const headerPointer = JSON.parse(JSON.stringify(e.request)).header
       var headerStorage = []
@@ -215,14 +205,16 @@ module.exports = function newmanCSVaioReporter (newman, options) {
       var stats = e.summary.run.stats
     } catch(err){console.log("error parsing timings")}
 
+    console.log(timings + "\n" + timings)
+
     newman.exports.push({
-      name: 'newman-csv-report',
-      default: 'newman-run-report.csv',
+      name: 'newman-csvallinone-reporter',
+      default: (collName + '.csv'),
       path: options.export,
       content: "\uFEFF" + getResults()
     })
     bar.stop();
-    console.log('CSV write complete!')
+    console.log('CSV write complete.')
   })
 }
 
