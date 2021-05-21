@@ -205,7 +205,7 @@ module.exports = function newmanCSVaioReporter (newman, options) {
       var stats = e.summary.run.stats
     } catch(err){console.log("error parsing timings")}
 
-    // console.log(timings + "\n" + timings)
+    // console.log(timings + "\n" + stats)
 
     newman.exports.push({
       name: 'newman-csvallinone-reporter',
