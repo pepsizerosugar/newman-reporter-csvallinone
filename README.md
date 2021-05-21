@@ -87,3 +87,91 @@ const columns = [
 * Each Assertion is separated with '||'.
 * cURL is made by combining each column.
 * If you want get pre-RequestScript(each TestCase not folder), just erase comment at columns array.
+* You can check your test detail result for remove comment at some code down below.
+```js
+  newman.on('beforeDone', (err, e) => {
+    if (err) return
+
+    // timings stats
+    try{
+      var timings = e.summary.run.timings
+      var stats = e.summary.run.stats
+    } catch(err){console.log("error parsing timings")}
+
+    newman.exports.push({
+      name: 'newman-csvallinone-reporter',
+      default: (collName + '.csv'),
+      path: options.export,
+      content: "\uFEFF" + getResults()
+    })
+    bar.stop();
+    console.log('CSV write complete.')
+--> // console.log(JSON.stringify(timings) + "\n" + JSON.stringify(stats))
+  })
+```
+* Then, you can see this result at terminal.
+```json
+{
+	"responseAverage":13.364372469635628,
+	"responseMin":8,
+	"responseMax":65,
+	"responseSd":5.6580015633813625,
+	"dnsAverage":0,
+	"dnsMin":0,
+	"dnsMax":0,
+	"dnsSd":0,
+	"firstByteAverage":0,
+	"firstByteMin":0,
+	"firstByteMax":0,
+	"firstByteSd":0,
+	"started":1621570258472,
+	"completed":1621570279290
+},
+{
+	"iterations":{
+		"total":1,
+		"pending":0,
+		"failed":0
+	},
+	"items":{
+		"total":164,
+		"pending":0,
+		"failed":0
+	},
+	"scripts":{
+		"total":951,
+		"pending":0,
+		"failed":0
+	},
+	"prerequests":{
+		"total":164,
+		"pending":0,
+		"failed":0
+	},
+	"requests":{
+		"total":247,
+		"pending":0,
+		"failed":0
+	},
+	"tests":{
+		"total":164,
+		"pending":0,
+		"failed":0
+	},
+	"assertions":{
+		"total":323,
+		"pending":0,
+		"failed":10
+	},
+	"testScripts":{
+		"total":481,
+		"pending":0,
+		"failed":0
+	},
+	"prerequestScripts":{
+		"total":470,
+		"pending":0,
+		"failed":0
+	}
+}
+```
