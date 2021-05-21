@@ -9,8 +9,8 @@
 ## 1. Getting Started
 ### 1-1. Installation
 ```
-1. This module is not support npm install now.
-2. Download this repo and move folder to ./node_module/newman-reporter-csvallinone
+1. npm i -g newman-reporter-csvallinone
+2. https://www.npmjs.com/package/newman-reporter-csvallinone
 ```
 ### 1-2. How to use
 ```
