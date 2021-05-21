@@ -12,10 +12,6 @@
     "name": "Park Jun-beom",
     "email": "juntiger53@gmail.com"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
-
   "keywords": [
     "newman",
     "reporter",
@@ -29,16 +25,12 @@
     "Test",
     "Automation"
   ],
-
   "main": "index.js",
-
   "dependencies": {
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2"
   },
-
   "devDependencies": {
-    "newman": "^5.2.3",
     "standard": "^14.3.3",
     "chalk": "^4.1.0",
     "cli-progress": "^3.8.2",
