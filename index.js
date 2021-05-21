@@ -205,8 +205,6 @@ module.exports = function newmanCSVaioReporter (newman, options) {
       var stats = e.summary.run.stats
     } catch(err){console.log("error parsing timings")}
 
-    // console.log(JSON.stringify(timings) + "\n" + JSON.stringify(stats))
-
     newman.exports.push({
       name: 'newman-csvallinone-reporter',
       default: (collName + '.csv'),
@@ -215,6 +213,7 @@ module.exports = function newmanCSVaioReporter (newman, options) {
     })
     bar.stop();
     console.log('CSV write complete.')
+    // console.log(JSON.stringify(timings) + "\n" + JSON.stringify(stats))
   })
 }
 
