@@ -97,7 +97,7 @@ module.exports = function newmanCSVaioReporter (newman, options) {
         else
           Object.assign(log, { requestBody: request.body[request.body.mode].toString().replace(/ |\r\n|\r|\n/gi, "") })
       }
-    } catch (error) {console.log("error : " + item.name + "\n" + JSON.stringify(request))}    
+    } catch (error) {console.log("error : " + item.name + "\n" + JSON.stringify(request))}
 
     // make curl
     try{
@@ -105,20 +105,24 @@ module.exports = function newmanCSVaioReporter (newman, options) {
       curlHeader = ""
       curl = ""
       curlUrl = "curl --location --request " + e.request.method + " \"" + e.request.url.toString() + "\" \\"
-      
-      var pointer = JSON.parse(JSON.stringify(e.request).toString()).header
+
+      var pointer
       var keyStorage = []
       var valueStorage = []
 
-      for(var i=0; i < Object.keys(pointer).length; i++){
-        if(pointer.hasOwnProperty('system') !== true){
-          keyStorage.push(JSON.stringify(pointer[i].key))
-          valueStorage.push(JSON.stringify(pointer[i].value))
+      if(JSON.parse(JSON.stringify(e.request).toString()).hasOwnProperty('header') != false){
+        pointer = JSON.parse(JSON.stringify(e.request).toString()).header
+
+        for(var i=0; i < Object.keys(pointer).length; i++){
+          if(pointer.hasOwnProperty('system') !== true){
+            keyStorage.push(JSON.stringify(pointer[i].key))
+            valueStorage.push(JSON.stringify(pointer[i].value))
+          }
         }
+
+        for(var i=0; i < Object.keys(keyStorage).length; i++)
+          curlHeader += " --header " + "\"" + keyStorage[i].toString("").replace(/\"/gi, "") + ": " + valueStorage[i].toString().replace(/\"/gi, "") + "\" \\"
       }
-      
-      for(var i=0; i < Object.keys(keyStorage).length; i++)
-        curlHeader += " --header " + "\"" + keyStorage[i].toString("").replace(/\"/gi, "") + ": " + valueStorage[i].toString().replace(/\"/gi, "") + "\" \\"
 
       if(request.hasOwnProperty('body')){
         curlBody = " --data \"" + request.body[request.body.mode].toString().replace(/ |\r\n|\r|\n/gi, "").replace(/\"/gi, "\\\"") + "\""
@@ -130,7 +134,7 @@ module.exports = function newmanCSVaioReporter (newman, options) {
         curl += curlUrl + curlHeader
 
       Object.assign(log, { curl })
-    } catch (error) {console.log("error parsing curl : " + item.name + "\n" + JSON.stringify(request))}
+    } catch (error) {console.log("\nerror parsing curl : " + item.name + "\n" + JSON.stringify(request))}
   })
 
   // pre-script collection, folder, case
@@ -157,8 +161,8 @@ module.exports = function newmanCSVaioReporter (newman, options) {
 
     const { status, code, responseTime, responseSize, stream } = e.response
     Object.assign(log, { responseStatus: status, responseCode: code, responseTime, responseSize })
-    Object.assign(log, { responseBody: stream.toString() }) 
-    
+    Object.assign(log, { responseBody: stream.toString() })
+
     try {
       const headerPointer = JSON.parse(JSON.stringify(e.request)).header
       var headerStorage = []
@@ -195,7 +199,7 @@ module.exports = function newmanCSVaioReporter (newman, options) {
     bar.increment();
     logs.push(log)
   })
- 
+
   newman.on('beforeDone', (err, e) => {
     if (err) return
 
