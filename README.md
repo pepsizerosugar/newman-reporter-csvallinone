@@ -93,10 +93,10 @@ const columns = [
     if (err) return
 
     // timings stats
-    try{
+    try {
       var timings = e.summary.run.timings
       var stats = e.summary.run.stats
-    } catch(err){console.log("error parsing timings")}
+    } catch (err) { console.log("\nerror parsing timings") }
 
     newman.exports.push({
       name: 'newman-csvallinone-reporter',
