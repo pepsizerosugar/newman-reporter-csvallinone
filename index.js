@@ -7,6 +7,8 @@ const logs = []
 const columns = [
   // collection info
   'collectionName',
+  'environmentName',
+  'folderName',
   'caseName',
 
   // request value
@@ -35,8 +37,6 @@ const columns = [
   // 'casePrerequest'
 ]
 
-let collName = ""
-
 const CSV = {
   stringify: (str) => {
     return `"${str.replace(/"/g, '""')}"`
@@ -53,6 +53,18 @@ const CSV = {
  */
 module.exports = function newmanCSVaioReporter(newman, options) {
   var body
+  var checkParams = 0
+  var checkAuth = 0
+
+  var collName = newman.summary.collection.name
+  var envName = newman.summary.environment.name
+  var folderName
+
+  const folderStorage = newman.summary.collection.items.members
+  var folderCount = Object.keys(newman.summary.collection.items.members).length
+  var caseCount
+  var x = 0
+  var y = 0
 
   var bar = new progress.Bar({
     format: '== Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s ==',
@@ -82,19 +94,31 @@ module.exports = function newmanCSVaioReporter(newman, options) {
   newman.on('beforeRequest', (err, e) => {
     if (err || !e.item.name) return
 
+    // parsing folder name
+    if (x < folderCount) {
+      caseCount = Object.keys(folderStorage[x].items.members).length
+      folderName = newman.summary.collection.items.members[x].name
+
+      if ((++y) == caseCount) {
+        ++x
+        y = 0
+      }
+    }
+
     const { cursor, item, request } = e
 
-    collName = newman.summary.collection.name
-
+    // parsing info and request
     Object.assign(log, {
       collectionName: collName,
+      environmentName: envName,
+      folderName: folderName,
       iteration: cursor.iteration + 1,
       caseName: item.name,
       requestMethod: request.method,
       requestUrl: request.url.toString()
     })
 
-    // bodyType check
+    // parsing request body
     try {
       if (request.hasOwnProperty('body')) {
         var bodyType = request.body.mode
@@ -158,6 +182,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
     const { executions } = e
 
+    // parsing case pre-request
     try {
       if (JSON.stringify(executions[2]) !== undefined)
         Object.assign(log, { casePrerequest: JSON.stringify(executions[2].script.exec) })
@@ -171,8 +196,50 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
     if (err || !e.item.name) return
 
+    const request = JSON.parse(JSON.stringify(e.request))
+
+    // parsing params query
+    try {
+      const tempParams = request.url.query
+      const paramStorage = []
+
+      if (tempParams.length > 0) {
+        if (checkParams === 0) {
+          columns.push('requestParams')
+          checkParams = 1
+        }
+
+        for (var i = 0; i < tempParams.length; i++)
+          paramStorage.push(tempParams[i])
+
+        Object.assign(log, { requestParams: JSON.stringify(paramStorage) })
+      }
+    } catch (err) { console.log("\nerror parsing params") }
+
+    // parsing auth
+    try {
+      if (request.hasOwnProperty('auth')) {
+        const tempAuth = request.auth
+        const authStorage = []
+
+        var authType = tempAuth.type
+        const typeAuth = tempAuth[authType]
+
+        if (checkAuth === 0) {
+          columns.push('requestAuth')
+          checkAuth = 1
+        }
+
+        for (var i = 0; i < typeAuth.length; i++)
+          authStorage.push(typeAuth[i])
+
+        Object.assign(log, { 'requestAuth': JSON.stringify(authStorage) })
+      }
+    } catch (err) { console.log("\nerror parsing auth") }
+
     const { status, code, responseTime, responseSize, stream } = e.response
 
+    // parsing response
     Object.assign(log, {
       responseStatus: status,
       responseCode: code,
@@ -181,6 +248,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
       responseBody: stream.toString()
     })
 
+    // parsing header
     try {
       const headerPointer = JSON.parse(JSON.stringify(e.request)).header
       var headerStorage = []
@@ -205,6 +273,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     log[key] = log[key] || []
     log[key].push(assertion)
 
+    // parsing assertion
     try {
       if (e.hasOwnProperty('error') && e.error !== null) {
         const message = e.error.message
@@ -225,7 +294,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
   newman.on('beforeDone', (err, e) => {
     if (err) return
 
-    // timings stats
+    // parsing timings && stats
     try {
       var timings = e.summary.run.timings
       var stats = e.summary.run.stats
@@ -233,7 +302,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
     newman.exports.push({
       name: 'newman-csvallinone-reporter',
-      default: (collName + '.csv'),
+      default: collName + '(' + envName + ').csv',
       path: options.export,
       content: "\uFEFF" + getResults()
     })

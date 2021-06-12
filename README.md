@@ -2,9 +2,20 @@
 <img src="https://blog.kakaocdn.net/dn/79CWs/btqFoP5voGA/joxJDVcORakigFAOhrLwCK/img.png">
 
 * CSV Result File generator module for newman.
-* 하나의 CSV 파일에 모든 정보를 담은 newman Reporter입니다.
-* This module is based on REST API Automation Test and has a dependency on 'newman' module.
+* This module is based on REST API Automation Test.
 <br><br>
+
+## 0. Change Log
+### version 0.2.0 (2021.06.13)
+```
+1. added parsing requestParams method.
+2. added parsing requestAuth method.
+3. added parsing folderName method.
+4. added folderName, environmentName column.
+5. added comment at each parsing method.
+6. updated module version. (0.1.0 --> 0.2.0)
+```
+<br>
 
 ## 1. Getting Started
 ### 1-1. Installation
@@ -16,41 +27,49 @@
 ```
 1. You can use this module like any other newman reporter.
 2. Open cmd or bash.
-3. Type newman cli and add some line down below.
+3. Type newman cli and add line down below.
 4. '-r csvallinone'
-5. ex) newman run collection -e environment -r csvallinone
-6. Default CSV save location ./User/newman
+	ex) newman run collection -e environment -r csvallinone
+5. Default CSV save location. (./$User/newman)
 ```
-### 1-3. Option
+### 1-3. Export Option
 * --reporter-csvallinone-export
 ```
 Specify a path where the CSV file will be written to disk.
 ex) --reporter-csvallinone-export ./APITest/TestResult/CSV/******.csv
+ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-export ./APITest/TestResult/CSV/******.csv
 ```
 <br>
 
 ## 2. CSV Output
 ### 2-1. Columns
-| no | Category           | Desc                                                    | example                                                     |
-|----|--------------------|---------------------------------------------------------|-------------------------------------------------------------|
-| 1  | collectionName     | Running Collection name                                 | Market_Billing_API                                          |
-| 2  | caseName           | Running TestCase name                                   | API_googleplay_001                                          |
-| 3  | requestMethod      | Request method of TestCase                              | PUT                                                         |
-| 4  | requestHeader      | Request header of TestCase                              | {"key":"marketKey","value":"sf92mtkfnalsk28jsdw"}           |
-| 5  | requestUrl         | Request URL of TestCase                                 | market.com/v1/subscribe                                     |
-| 6  | requestBody        | Request Body of TestCase                                | {"UDID":"ASFJ082LFN29F8SDFMW0FKDF"}                         |
-| 7  | responseTime       | Request Time of TestCase(millsec)                       | 12                                                          |
-| 8  | responseStatus     | Response Status of excuted TestCase                     | OK                                                          |
-| 9  | responseCode       | Response Status of excuted TestCase                     | 200                                                         |
-| 10 | responseBody       | Response body of excuted TestCase                       | {"errorCode":0, "subStatus":1}                              |
-| 11 | iteration          | Iteration of TestCase                                   | 1                                                           |
-| 12 | executedTest       | Pass Assertion that you set at test script              | subStatus must be '1'                                       |
-| 13 | failedTest         | Fail Assertion that you set at test script              | errorCode must be '1'                                       |
-| 14 | skippedTest        | Skiped Assertion that you set at test script            | errorMessage must be 'Ok'                                   |
-| 15 | assertionMessage   | Assertion message for fail TestCase                     | Expected errorCode '1' but got '0'                          |
-| 16 | curl               | cURL of each TestCase (can immediately run at terminal  | curl --location --request PUT "market.com/v1/subscribe"...  |
+| no | Category           | Desc                                                    | example                                                     		|
+|----|--------------------|---------------------------------------------------------|-------------------------------------------------------------------|
+| 1  | collectionName     | Running Collection name                                 | Market_Billing_API                                          		|
+| 2  | environmentName    | Running Environment name                                | Billing_googleplay_test                                       	|
+| 3  | folderName		  | Running Folder name                                		| API_googleplay_payment                                    	   	|
+| 4  | caseName           | Running TestCase name                                   | API_googleplay_payment_001                                  		|
+| 5  | requestMethod      | Request method of TestCase                              | PUT                                                         		|
+| 6  | requestHeader      | Request header of TestCase                              | {"key":"marketKey","value":"sf92mtkfnalsk28jsdw"}           		|
+| 7  | requestUrl         | Request URL of TestCase                                 | market.com/v1/subscribe                                     		|
+| 8  | requestBody        | Request Body of TestCase                                | {"UDID":"ASFJ082LFN29F8SDFMW0FKDF"}                        		|
+| 9  | responseTime       | Request Time of TestCase(millsec)                       | 12                                                       		    |
+| 10 | responseStatus     | Response Status of excuted TestCase                    	| OK                                                    		    |
+| 11 | responseCode       | Response Status of excuted TestCase                     | 200                                                  		       	|
+| 12 | responseBody       | Response body of excuted TestCase                       | {"errorCode":0, "subStatus":1}                       		       	|
+| 13 | iteration          | Iteration of TestCase                                   | 1																	|
+| 14 | executedTest       | Pass Assertion that you set at test script              | subStatus must be '1'                               		        |
+| 15 | failedTest         | Fail Assertion that you set at test script              | errorCode must be '1'                               		        |
+| 16 | skippedTest        | Skiped Assertion that you set at test script            | errorMessage must be 'Ok'                            			    |
+| 17 | assertionMessage   | Assertion message for fail TestCase                     | Expected errorCode '1' but got '0'                          		|
+| 18 | curl               | cURL of each TestCase (can immediately run at terminal  | curl --location --request PUT --data "market.com/v1/subs... 		|
+| 19 | requestParams	  | Request params. (parsing when request params exist)  	| [{"key1":"key1","value":"123"},{"key2":"key2","value":"321"}...	|
+| 20 | requestAuth		  | Request Auth. (parsing when request auth exist)  		| [{"type":"string","value":"header","key":"addTokenTo"}...			|
+* requestParams & requestAuth is automatically add to columns when request have that items.
+* Default output file name is --> $Collection-Name($Environenment-Name)-$Date.csv
+* ex) Market_Billing_API(Billing_googleplay_test)-2021-06-12-14-55-42-723-0.csv
 ### 2-2. Remove unwanted columns
-* You can edit 'columns' variable in 'index.js' for remove unwanted colums
+* You can edit 'columns' variable in 'index.js' for remove unwanted colums.
 ```js
 const columns = [
   // collection info
@@ -77,8 +96,8 @@ const columns = [
   'assertionMessage',
 
   // case curl
-  'curl'
-  
+  'curl',
+
   // optional column
   // 'casePrerequest'
 ]
@@ -86,13 +105,13 @@ const columns = [
 ### 2-3. Extra Info
 * Each Assertion is separated with '||'.
 * cURL is made by combining each column.
-* If you want get pre-RequestScript(each TestCase not folder), just erase comment at columns array.
+* If you want get pre-Request Script(each TestCase, not folder), just erase comment at columns array. ('casePrerequest')
 * You can check your test detail result for remove comment at some code down below.
 ```js
   newman.on('beforeDone', (err, e) => {
     if (err) return
 
-    // timings stats
+    // parsing timings && stats
     try {
       var timings = e.summary.run.timings
       var stats = e.summary.run.stats
