@@ -44,27 +44,27 @@ ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-e
 ## 2. CSV Output
 ### 2-1. Columns
 | no | Category           | Desc                                                    | example                                                     		|
-|----|--------------------|---------------------------------------------------------|-------------------------------------------------------------------|
+|----|--------------------|---------------------------------------------------------|---------------------------------------------------------------------------|
 | 1  | collectionName     | Running Collection name                                 | Market_Billing_API                                          		|
-| 2  | environmentName    | Running Environment name                                | Billing_googleplay_test                                       	|
-| 3  | folderName		  | Running Folder name                                		| API_googleplay_payment                                    	   	|
+| 2  | environmentName    | Running Environment name                                | Billing_googleplay_test							|
+| 3  | folderName	  | Running Folder name					    | API_googleplay_payment							|
 | 4  | caseName           | Running TestCase name                                   | API_googleplay_payment_001                                  		|
 | 5  | requestMethod      | Request method of TestCase                              | PUT                                                         		|
 | 6  | requestHeader      | Request header of TestCase                              | {"key":"marketKey","value":"sf92mtkfnalsk28jsdw"}           		|
 | 7  | requestUrl         | Request URL of TestCase                                 | market.com/v1/subscribe                                     		|
 | 8  | requestBody        | Request Body of TestCase                                | {"UDID":"ASFJ082LFN29F8SDFMW0FKDF"}                        		|
-| 9  | responseTime       | Request Time of TestCase(millsec)                       | 12                                                       		    |
-| 10 | responseStatus     | Response Status of excuted TestCase                    	| OK                                                    		    |
+| 9  | responseTime       | Request Time of TestCase(millsec)                       | 12									|
+| 10 | responseStatus     | Response Status of excuted TestCase                     | OK									|
 | 11 | responseCode       | Response Status of excuted TestCase                     | 200                                                  		       	|
 | 12 | responseBody       | Response body of excuted TestCase                       | {"errorCode":0, "subStatus":1}                       		       	|
-| 13 | iteration          | Iteration of TestCase                                   | 1																	|
+| 13 | iteration          | Iteration of TestCase                                   | 1										|
 | 14 | executedTest       | Pass Assertion that you set at test script              | subStatus must be '1'                               		        |
 | 15 | failedTest         | Fail Assertion that you set at test script              | errorCode must be '1'                               		        |
-| 16 | skippedTest        | Skiped Assertion that you set at test script            | errorMessage must be 'Ok'                            			    |
+| 16 | skippedTest        | Skiped Assertion that you set at test script            | errorMessage must be 'Ok'							|
 | 17 | assertionMessage   | Assertion message for fail TestCase                     | Expected errorCode '1' but got '0'                          		|
 | 18 | curl               | cURL of each TestCase (can immediately run at terminal  | curl --location --request PUT --data "market.com/v1/subs... 		|
-| 19 | requestParams	  | Request params. (parsing when request params exist)  	| [{"key1":"key1","value":"123"},{"key2":"key2","value":"321"}...	|
-| 20 | requestAuth		  | Request Auth. (parsing when request auth exist)  		| [{"type":"string","value":"header","key":"addTokenTo"}...			|
+| 19 | requestParams	  | Request params. (parsing when request params exist)	    | [{"key1":"key1","value":"123"},{"key2":"key2","value":"321"}...		|
+| 20 | requestAuth	  | Request Auth. (parsing when request auth exist)	    | [{"type":"string","value":"header","key":"addTokenTo"}...			|
 * requestParams & requestAuth is automatically add to columns when request have that items.
 * Default output file name is --> $Collection-Name($Environenment-Name)-$Date.csv
 * ex) Market_Billing_API(Billing_googleplay_test)-2021-06-12-14-55-42-723-0.csv
