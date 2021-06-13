@@ -3,7 +3,7 @@
   "license": "MIT",
   "description": "CSV Result File generator module for newman",
   "name": "newman-reporter-csvallinone",
-  "homepage": "https://github.com/pepsizerosugar/newman-reporter-csvallinone#readme",
+  "homepage": "https://github.com/pepsizerosugar/newman-reporter-csvallinone/blob/main/README.md",
   "repository": {
     "type": "git",
     "url": "https://github.com/pepsizerosugar/newman-reporter-csvallinone.git"
