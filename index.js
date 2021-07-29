@@ -12,6 +12,8 @@ const columns = [
   'caseName',
 
   // request value
+  'executedTime',
+  'stopTime',
   'requestMethod',
   'requestHeader',
   'requestUrl',
@@ -66,6 +68,9 @@ module.exports = function newmanCSVaioReporter(newman, options) {
   var x = 0
   var y = 0
 
+  var executedTime
+  var stopTime
+
   var bar = new progress.Bar({
     format: '== Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s ==',
     barCompleteChar: '\u2588',
@@ -80,13 +85,11 @@ module.exports = function newmanCSVaioReporter(newman, options) {
   })
 
   newman.on('beforeItem', (err, e) => {
-    body = ""
-
     if (err) return
 
-    try {
-      // console.log(JSON.stringify(e))
-    } catch (err) { console.log("\nerror parsing case time : " + e.item.name) }
+    body = ""
+    executedTime
+ = Date.now();
 
     log = {}
   })
@@ -286,6 +289,17 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
   newman.on('item', (err, e) => {
     if (err) return
+
+    stopTime = Date.now();
+
+    try {
+      Object.assign(log, {
+        executedTime
+    : executedTime
+    ,
+        stopTime: stopTime
+      })
+    } catch (err) { }
 
     bar.increment();
     logs.push(log)
