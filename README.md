@@ -1,15 +1,19 @@
 # CSV ALL-in-one newman Reporter
-<img src="https://blog.kakaocdn.net/dn/79CWs/btqFoP5voGA/joxJDVcORakigFAOhrLwCK/img.png">
+<img src="./resources/logo.png" alt="">
 
 * CSV Result File generator module for newman.
 * This module is based on REST API Automation Test.
 <br><br>
 
 ## 0. Change Log
-### version 0.2.1 (2021.07.29)
+### version 0.3.0 (2021.08.03)
 ```
-1. added parsing executed testcase time (UNIX Timestamp)
-2. added parsing stopTime testcase (UNIX Timestamp)
+1. removed parsing test timing & stats
+2. separated parsing method to module
+	2-1. beforeRequest
+	2-2. preRequest
+	2-3. request
+	2-4. assertion
 ```
 <br>
 
@@ -108,91 +112,3 @@ const columns = [
 * Each Assertion is separated with '||'.
 * cURL is made by combining each column.
 * If you want get pre-Request Script(each TestCase, not folder), just erase comment at columns array. ('casePrerequest')
-* You can check your test detail result for remove comment at some code down below.
-```js
-  newman.on('beforeDone', (err, e) => {
-    if (err) return
-
-    // parsing timings && stats
-    try {
-      var timings = e.summary.run.timings
-      var stats = e.summary.run.stats
-    } catch (err) { console.log("\nerror parsing timings") }
-
-    newman.exports.push({
-      name: 'newman-csvallinone-reporter',
-      default: (collName + '.csv'),
-      path: options.export,
-      content: "\uFEFF" + getResults()
-    })
-    bar.stop();
-    console.log('CSV write complete.')
---> // console.log(JSON.stringify(timings) + "\n" + JSON.stringify(stats))
-  })
-```
-* Then, you can see this result at terminal.
-```json
-{
-	"responseAverage":13.364372469635628,
-	"responseMin":8,
-	"responseMax":65,
-	"responseSd":5.6580015633813625,
-	"dnsAverage":0,
-	"dnsMin":0,
-	"dnsMax":0,
-	"dnsSd":0,
-	"firstByteAverage":0,
-	"firstByteMin":0,
-	"firstByteMax":0,
-	"firstByteSd":0,
-	"started":1621570258472,
-	"completed":1621570279290
-},
-{
-	"iterations":{
-		"total":1,
-		"pending":0,
-		"failed":0
-	},
-	"items":{
-		"total":164,
-		"pending":0,
-		"failed":0
-	},
-	"scripts":{
-		"total":951,
-		"pending":0,
-		"failed":0
-	},
-	"prerequests":{
-		"total":164,
-		"pending":0,
-		"failed":0
-	},
-	"requests":{
-		"total":247,
-		"pending":0,
-		"failed":0
-	},
-	"tests":{
-		"total":164,
-		"pending":0,
-		"failed":0
-	},
-	"assertions":{
-		"total":323,
-		"pending":0,
-		"failed":10
-	},
-	"testScripts":{
-		"total":481,
-		"pending":0,
-		"failed":0
-	},
-	"prerequestScripts":{
-		"total":470,
-		"pending":0,
-		"failed":0
-	}
-}
-```
