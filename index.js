@@ -1,6 +1,6 @@
-var _ = require('lodash'),
-  progress = require('cli-progress'),
-  chalk = require('chalk')
+var _ = require('lodash')
+var progress = require('cli-progress')
+var chalk = require('chalk')
 
 let log
 const logs = []
@@ -72,7 +72,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
   var stopTime
 
   var bar = new progress.Bar({
-    format: '== Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s ==',
+    format: '[INFO]   Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s',
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true
@@ -88,8 +88,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     if (err) return
 
     body = ""
-    executedTime
- = Date.now();
+    executedTime = Date.now();
 
     log = {}
   })
@@ -130,15 +129,19 @@ module.exports = function newmanCSVaioReporter(newman, options) {
         if (request.hasOwnProperty('body') && JSON.stringify(tempBody).length > 2) {
           if (bodyType === "urlencoded" || bodyType === "file" || bodyType === "graphql" || bodyType === "formdata") {
             body = JSON.stringify(tempBody)
-            Object.assign(log, { requestBody: body })
+            Object.assign(log, {
+              requestBody: body
+            })
           } else {
             body = tempBody.replace(/ |\r\n|\r|\n/gi, "")
-            Object.assign(log, { requestBody: body })
+            Object.assign(log, {
+              requestBody: body
+            })
           }
         }
       } else
         Object.assign(log, { requestBody: "" })
-    } catch (error) { console.log("\nerror parsing Body Type: " + item.name + "\n" + JSON.stringify(request)) }
+    } catch (error) { console.log("\n[ERROR]   Error parsing Body Type\n" + error) }
 
     // make curl
     try {
@@ -158,10 +161,10 @@ module.exports = function newmanCSVaioReporter(newman, options) {
       if (JSON.parse(requestTemp.toString()).hasOwnProperty('header') != false) {
         pointer = JSON.parse(requestTemp.toString()).header
 
-        for (var i = 0; i < pointer.length; i++) {
+        for (var rowHeader of pointer) {
           if (pointer.hasOwnProperty('system') !== true) {
-            keyStorage.push(JSON.stringify(pointer[i].key))
-            valueStorage.push(JSON.stringify(pointer[i].value))
+            keyStorage.push(JSON.stringify(rowHeader.key))
+            valueStorage.push(JSON.stringify(rowHeader.value))
           }
         }
 
@@ -175,8 +178,10 @@ module.exports = function newmanCSVaioReporter(newman, options) {
       } else
         curl += curlUrl + curlHeader
 
-      Object.assign(log, { curl })
-    } catch (error) { console.log("\nerror parsing cURL : " + item.name + "\n" + JSON.stringify(request)) }
+      Object.assign(log, {
+        curl
+      })
+    } catch (error) { console.log("\n[ERROR]   Error parsing cUR\n" + error) }
   })
 
   // pre-script collection, folder, case
@@ -188,10 +193,14 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     // parsing case pre-request
     try {
       if (JSON.stringify(executions[2]) !== undefined)
-        Object.assign(log, { casePrerequest: JSON.stringify(executions[2].script.exec) })
+        Object.assign(log, {
+          casePrerequest: JSON.stringify(executions[2].script.exec)
+        })
       else
-        Object.assign(log, { casePrerequest: null })
-    } catch (err) { console.log("\nerror parsing preRequest") }
+        Object.assign(log, {
+          casePrerequest: null
+        })
+    } catch (error) { console.log("\n[ERROR]   Error parsing preRequest\n" + error) }
 
   })
 
@@ -212,12 +221,14 @@ module.exports = function newmanCSVaioReporter(newman, options) {
           checkParams = 1
         }
 
-        for (var i = 0; i < tempParams.length; i++)
-          paramStorage.push(tempParams[i])
+        for (var rowParams of tempParams)
+          paramStorage.push(rowParams)
 
-        Object.assign(log, { requestParams: JSON.stringify(paramStorage) })
+        Object.assign(log, {
+          requestParams: JSON.stringify(paramStorage)
+        })
       }
-    } catch (err) { console.log("\nerror parsing params") }
+    } catch (error) { console.log("\n[ERROR]   Error parsing params\n" + error) }
 
     // parsing auth
     try {
@@ -233,12 +244,14 @@ module.exports = function newmanCSVaioReporter(newman, options) {
           checkAuth = 1
         }
 
-        for (var i = 0; i < typeAuth.length; i++)
-          authStorage.push(typeAuth[i])
+        for (var rowAuth of typeAuth)
+          authStorage.push(rowAuth)
 
-        Object.assign(log, { 'requestAuth': JSON.stringify(authStorage) })
+        Object.assign(log, {
+          'requestAuth': JSON.stringify(authStorage)
+        })
       }
-    } catch (err) { console.log("\nerror parsing auth") }
+    } catch (error) { console.log("\n[ERROR]   Error parsing auth\n" + error) }
 
     const { status, code, responseTime, responseSize, stream } = e.response
 
@@ -256,22 +269,27 @@ module.exports = function newmanCSVaioReporter(newman, options) {
       const headerPointer = JSON.parse(JSON.stringify(e.request)).header
       var headerStorage = []
 
-      for (var i = 0; i < headerPointer.length; i++) {
-        if (headerPointer[i].hasOwnProperty('system') !== true)
-          headerStorage.push(headerPointer[i])
+      for (var rowHeader of headerPointer) {
+        if (rowHeader.hasOwnProperty('system') !== true)
+          headerStorage.push(rowHeader)
       }
-      Object.assign(log, { requestHeader: JSON.stringify(headerStorage) })
-    } catch (err) { console.log("\nerror parsing header") }
+      Object.assign(log, {
+        requestHeader: JSON.stringify(headerStorage)
+      })
+    } catch (error) { console.log("\n[ERROR]   Error parsing header\n" + error) }
   })
 
   newman.on('assertion', (err, e) => {
     const { assertion } = e
 
-    const key = err
-      ? 'failedTest'
-      : e.skipped
-        ? 'skippedTest'
-        : 'executedTest'
+    let key
+
+    if (err)
+      key = 'failedTest'
+    else if (e.skipped)
+      key = 'skippedTest'
+    else
+      key = 'executedTest'
 
     log[key] = log[key] || []
     log[key].push(assertion)
@@ -284,7 +302,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
         log['assertionMessage'] = log['assertionMessage'] || []
         log['assertionMessage'].push(message.toString().replace(/\'/gi, ""))
       }
-    } catch (err) { console.log("\nerror parsing assertion") }
+    } catch (error) { console.log("\n[ERROR]   Error parsing assertion\n" + error) }
   })
 
   newman.on('item', (err, e) => {
@@ -292,14 +310,10 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
     stopTime = Date.now();
 
-    try {
-      Object.assign(log, {
-        executedTime
-    : executedTime
-    ,
-        stopTime: stopTime
-      })
-    } catch (err) { }
+    Object.assign(log, {
+      executedTime: executedTime,
+      stopTime: stopTime
+    })
 
     bar.increment();
     logs.push(log)
@@ -312,7 +326,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     try {
       var timings = e.summary.run.timings
       var stats = e.summary.run.stats
-    } catch (err) { console.log("\nerror parsing timings") }
+    } catch (error) { console.log("\n[ERROR]   Error parsing timings\n" + error) }
 
     newman.exports.push({
       name: 'newman-csvallinone-reporter',
