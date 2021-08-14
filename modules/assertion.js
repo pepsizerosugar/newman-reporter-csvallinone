@@ -1,39 +1,47 @@
+let inputLog = {}
+
 module.exports = {
     module: function (err, e, log) {
+        inputLog = log
         const {
             assertion,
             error
         } = e
 
-        // parsing assertion
-        try {
-            let key
+        parsingAssertion(err, e, assertion)
+        parsingAssertionmessage(e, error)
 
-            if (err)
-                key = 'failedTest'
-            else if (e.skipped)
-                key = 'skippedTest'
-            else
-                key = 'executedTest'
+        return inputLog
+    }
+}
 
-            log[key] = log[key] || []
-            log[key].push(assertion)
-        } catch (errors) {
-            console.log('\nerror parsing assertion\n' + errors)
+function parsingAssertion(err, e, assertion){
+    try {
+        let key
+
+        if (err)
+            key = 'failedTest'
+        else if (e.skipped)
+            key = 'skippedTest'
+        else
+            key = 'executedTest'
+
+        inputLog[key] = inputLog[key] || []
+        inputLog[key].push(assertion)
+    } catch (error) {
+        console.log('\n[ERROR]  Error when parsing assertion\n' + error)
+    }
+}
+
+function parsingAssertionmessage(e, error){
+    try {
+        if (e.hasOwnProperty('error') && error !== null) {
+            const message = error.message
+
+            inputLog['assertionMessage'] = inputLog['assertionMessage'] || []
+            inputLog['assertionMessage'].push(message.toString().replace(/\'/gi, ""))
         }
-
-        // parsing assertionMessage
-        try {
-            if (e.hasOwnProperty('error') && error !== null) {
-                const message = error.message
-
-                log['assertionMessage'] = log['assertionMessage'] || []
-                log['assertionMessage'].push(message.toString().replace(/\'/gi, ""))
-            }
-        } catch (errors) {
-            console.log("\nerror parsing assertionMessage\n" + errors)
-        }
-
-        return log
+    } catch (err) {
+        console.log("\n[ERROR]  Error when parsing assertionMessage\n" + err)
     }
 }

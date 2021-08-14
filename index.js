@@ -2,10 +2,9 @@ const _ = require('lodash')
 const progress = require('cli-progress')
 const chalk = require('chalk')
 
-var preRequest = require(__dirname + '/modules/preRequest.js')
-var assertion = require(__dirname + '/modules/assertion.js')
 var beforeRequest = require(__dirname + '/modules/beforeRequest.js')
 var request = require(__dirname + '/modules/request.js')
+var assertion = require(__dirname + '/modules/assertion.js')
 
 let log = {}
 const logs = []
@@ -39,9 +38,6 @@ const columns = [
 
   // case curl
   'curl'
-
-  // optional column
-  // 'casePrerequest'
 ]
 
 const CSV = {
@@ -59,13 +55,8 @@ const CSV = {
  * @returns {*}
  */
 module.exports = function newmanCSVaioReporter(newman, options) {
-  const folderStorage = newman.summary.collection.items.members
-  var folderCount = Object.keys(newman.summary.collection.items.members).length
-  var collName = newman.summary.collection.name
-  var envName = newman.summary.environment.name
-
   var bar = new progress.Bar({
-    format: '== Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s ==',
+    format: '[INFO]  Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s',
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true
@@ -77,25 +68,19 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     bar.start(e.cursor.length * e.cursor.cycles, 0)
   })
 
-  newman.on('beforeItem', (err, e) => {
+  newman.on('beforeItem', (err) => {
     if (err) return
+
+    log = {}
 
     Object.assign(log, {
       executedTime: Date.now()
     })
-
-    log = {}
   })
 
   newman.on('beforeRequest', (err, e) => {
     if (err || !e.item.name) return
-    beforeRequest.folderName(newman, folderCount, folderStorage)
     log = beforeRequest.module(newman, e, log)
-  })
-
-  newman.on('prerequest', (err, e) => {
-    if (err || !e.item.name) return
-    log = preRequest.module(e, log)
   })
 
   newman.on('request', (err, e) => {
@@ -107,7 +92,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     log = assertion.module(err, e, log)
   })
 
-  newman.on('item', (err, e) => {
+  newman.on('item', (err) => {
     if (err) return
 
     Object.assign(log, {
@@ -121,6 +106,9 @@ module.exports = function newmanCSVaioReporter(newman, options) {
   newman.on('beforeDone', (err, e) => {
     if (err) return
 
+    var collName = e.summary.collection.name
+    var envName = e.summary.environment.name
+
     newman.exports.push({
       name: 'newman-csvallinone-reporter',
       default: collName + '(' + envName + ').csv',
@@ -129,7 +117,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     })
 
     bar.stop()
-    console.log('CSV write complete.')
+    console.log('[INFO]  CSV write complete.')
   })
 }
 
@@ -141,10 +129,7 @@ function getResults() {
       .forEach((key) => {
         const val = log[key]
         const index = columns.indexOf(key)
-        const rowValue = Array.isArray(val) ?
-          val.join('||') :
-          String(val)
-
+        const rowValue = Array.isArray(val) ? val.join('||') : String(val)
         row[index] = CSV.stringify(rowValue)
       })
 
