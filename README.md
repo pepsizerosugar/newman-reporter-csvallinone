@@ -6,10 +6,9 @@
 <br><br>
 
 ## 0. Change Log
-### version 0.2.1 (2021.07.29)
+### version 0.2.2 (2021.08.15)
 ```
-1. added parsing executed testcase time (UNIX Timestamp)
-2. added parsing stopTime testcase (UNIX Timestamp)
+1. Code cleanup
 ```
 <br>
 
@@ -70,38 +69,38 @@ ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-e
 * You can edit 'columns' variable in 'index.js' for remove unwanted colums.
 ```js
 const columns = [
-  // collection info
-  'collectionName',
-  'environmentName',
-  'folderName',
-  'caseName',
+    // collection info
+    'collectionName',
+    'environmentName',
+    'folderName',
+    'caseName',
 
-  // request value
-  'executedTime',
-  'stopTime',
-  'requestMethod',
-  'requestHeader',
-  'requestUrl',
-  'requestBody',
+    // request value
+    'executedTime',
+    'stopTime',
+    'requestMethod',
+    'requestHeader',
+    'requestUrl',
+    'requestBody',
 
-  // response value
-  'responseTime',
-  'responseStatus',
-  'responseCode',
-  'responseBody',
+    // response value
+    'responseTime',
+    'responseStatus',
+    'responseCode',
+    'responseBody',
 
-  // test info
-  'iteration',
-  'executedTest',
-  'failedTest',
-  'skippedTest',
-  'assertionMessage',
+    // test info
+    'iteration',
+    'executedTest',
+    'failedTest',
+    'skippedTest',
+    'assertionMessage',
 
-  // case curl
-  'curl',
+    // case curl
+    'curl',
 
-  // optional column
-  // 'casePrerequest'
+    // optional column
+    // 'casePrerequest'
 ]
 ```
 ### 2-3. Extra Info
