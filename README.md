@@ -76,35 +76,35 @@ ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-e
 * You can edit 'columns' variable in 'index.js' for remove unwanted colums.
 ```js
 const columns = [
-  // collection info
-  'collectionName',
-  'environmentName',
-  'folderName',
-  'caseName',
+    // collection info
+    'collectionName',
+    'environmentName',
+    'folderName',
+    'caseName',
 
-  // request value
-  'executedTime',
-  'stopTime',
-  'requestMethod',
-  'requestHeader',
-  'requestUrl',
-  'requestBody',
+    // request value
+    'executedTime',
+    'stopTime',
+    'requestMethod',
+    'requestHeader',
+    'requestUrl',
+    'requestBody',
 
-  // response value
-  'responseTime',
-  'responseStatus',
-  'responseCode',
-  'responseBody',
+    // response value
+    'responseTime',
+    'responseStatus',
+    'responseCode',
+    'responseBody',
 
-  // test info
-  'iteration',
-  'executedTest',
-  'failedTest',
-  'skippedTest',
-  'assertionMessage',
+    // test info
+    'iteration',
+    'executedTest',
+    'failedTest',
+    'skippedTest',
+    'assertionMessage',
 
-  // case curl
-  'curl'
+    // case curl
+    'curl'
 ]
 ```
 ### 2-3. Extra Info
