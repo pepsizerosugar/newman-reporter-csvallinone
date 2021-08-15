@@ -3,10 +3,11 @@
 
 * CSV Result File generator module for newman.
 * This module is based on REST API Automation Test.
+* If you have an problem with using separted version or want more information of running test, please leave a issue at github or email.
 <br><br>
 
 ## 0. Change Log
-### version 0.4.0 (2021.08.14)
+### version 0.4.1 (2021.08.15)
 ```
 1. Removed parsing 'test timing' & 'stats'
 2. Removed parsing 'pre-Request'
@@ -14,6 +15,7 @@
 	2-1. beforeRequest
 	2-2. request
 	2-3. assertion
+4. Code cleanup
 ```
 <br>
 
