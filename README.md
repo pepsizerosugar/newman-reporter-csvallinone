@@ -12,9 +12,9 @@
 1. Removed parsing 'test timing' & 'stats'
 2. Removed parsing 'pre-Request'
 3. Separated parsing method to module
-	2-1. beforeRequest
-	2-2. request
-	2-3. assertion
+	3-1. beforeRequest
+	3-2. request
+	3-3. assertion
 4. Code cleanup
 ```
 <br>
