@@ -40,14 +40,10 @@ const columns = [
   'curl'
 ]
 
-const CSV = {
-  stringify: (str) => {
-    return `"${str.replace(/"/g, '""')}"`
-  }
-}
+const CSV = { stringify: (str) => { return `"${str.replace(/"/g, '""')}"` } }
 
 /**
- * Reporter that outputs basic logs to CSV (default: $CollectionName-$Date.csv).
+ * Reporter that outputs basic logs to CSV (default: $CollectionName($EnvironmentName)-$Date.csv).
  *
  * @param {Object} newman - The collection run object, with event hooks for reporting run details.
  * @param {Object} options - A set of collection run options.
@@ -56,7 +52,7 @@ const CSV = {
  */
 module.exports = function newmanCSVaioReporter(newman, options) {
   var bar = new progress.Bar({
-    format: '[INFO]  Newman Run Progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s',
+    format: '[INFO]  newman run progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s',
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
     hideCursor: true
