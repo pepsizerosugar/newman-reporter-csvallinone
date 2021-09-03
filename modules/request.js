@@ -53,7 +53,6 @@ function parsingAuth(request) {
             const typeAuth = request.auth[authType]
 
             if (isEmpty(typeAuth)) {
-                console.log("typeAuth: " + typeAuth)
                 if (checkAuth === 0) {
                     inputColumns.push('requestAuth')
                     checkAuth = 1
