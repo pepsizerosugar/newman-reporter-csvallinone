@@ -8,7 +8,7 @@ var assertion = require(__dirname + '/modules/assertion.js')
 
 let log = {}
 const logs = []
-const columns = [
+var columns = [
   // collection info
   'collectionName',
   'environmentName',
@@ -83,7 +83,9 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
   newman.on('request', (err, e) => {
     if (err || !e.item.name) return
-    log = request.module(e, log)
+    var output = request.module(e, log, columns)
+    log = output.outputLog
+    columns = output.outputColumns
   })
 
   newman.on('assertion', (err, e) => {
