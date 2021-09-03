@@ -7,15 +7,11 @@
 <br><br>
 
 ## 0. Change Log
-### version 0.4.1 (2021.08.15)
+### version 0.4.2 (2021.09.03)
 ```
-1. Removed parsing 'test timing' & 'stats'
-2. Removed parsing 'pre-Request'
-3. Separated parsing method to module
-	3-1. beforeRequest
-	3-2. request
-	3-3. assertion
-4. Code cleanup
+1. Fixed parsing Auth params
+    1-1. parsingParams
+    1-2. parsingAuth
 ```
 <br>
 
