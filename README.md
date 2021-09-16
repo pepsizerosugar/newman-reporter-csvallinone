@@ -1,6 +1,9 @@
 # CSV ALL-in-one newman Reporter
 <img src="./resources/logo.png" alt="">
 
+![Version](https://img.shields.io/badge/Version-0.4.2-brightgreen)
+![Version](https://img.shields.io/badge/Update-2021.09.03-blue)
+
 * CSV Result File generator module for newman.
 * This module is based on REST API Automation Test.
 * If you have an problem with using separted version or want more information of running test, please leave a issue at github or email.
