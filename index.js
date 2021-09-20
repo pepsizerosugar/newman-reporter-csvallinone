@@ -68,7 +68,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
   newman.on('beforeItem', (err) => {
     if (err) return
-    
+
     log = {}
 
     Object.assign(log, {
@@ -94,7 +94,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
 
   newman.on('item', (err) => {
     if (err) return
-    
+
     Object.assign(log, {
       stopTime: Date.now()
     })

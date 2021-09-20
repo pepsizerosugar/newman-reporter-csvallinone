@@ -1,8 +1,8 @@
 # CSV ALL-in-one newman Reporter
 <img src="./resources/logo.png" alt="">
 
-![Version](https://img.shields.io/badge/Version-0.4.2-brightgreen)
-![Version](https://img.shields.io/badge/Update-2021.09.03-blue)
+![Version](https://img.shields.io/badge/Version-0.4.3-brightgreen)
+![Version](https://img.shields.io/badge/Update-2021.09.20-blue)
 
 * CSV Result File generator module for newman.
 * This module is based on REST API Automation Test.
@@ -10,11 +10,15 @@
 <br><br>
 
 ## 0. Change Log
-### version 0.4.2 (2021.09.03)
+### version 0.4.3 (2021.09.20)
 ```
-1. Fixed parsing Auth params
+1. Fixed parsing Auth params (again)
     1-1. parsingParams
     1-2. parsingAuth
+2. Edited parsing cURL method
+    2-1. Same as parsing other entities
+3. Edited parsing Header method
+    3-1. Remove useless name fields from parsed header entities
 ```
 <br>
 

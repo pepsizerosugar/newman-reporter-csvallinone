@@ -4,14 +4,12 @@ module.exports = {
     module: function (e, log) {
         inputLog = log
         const { executions } = e
-
         parsingPrerequest(executions)
-
         return inputLog;
     }
 }
 
-function parsingPrerequest(executions){
+function parsingPrerequest(executions) {
     try {
         if (JSON.stringify(executions[2]) !== undefined)
             Object.assign(log, {
