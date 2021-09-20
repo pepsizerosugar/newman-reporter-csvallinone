@@ -1,6 +1,5 @@
 let inputLog = {}
 let inputColumns = []
-
 var checkParams = 0
 var checkAuth = 0
 
@@ -9,11 +8,13 @@ module.exports = {
         inputLog = log
         inputColumns = columns
         const { request } = e
-
-        parsingParams(request)
-        parsingAuth(request)
+        if (request.url.query.toString().length > 0) {
+            parsingParams(request)
+        }
+        if (request.hasOwnProperty('auth')) {
+            parsingAuth(request)
+        }
         parsingHeader(e)
-
         return {
             outputLog: inputLog,
             outputColumns: inputColumns
@@ -23,22 +24,13 @@ module.exports = {
 
 function parsingParams(request) {
     try {
-        const tempParams = request.url.query
-        const paramStorage = []
-
-        if (isEmpty(tempParams)) {
-            if (checkParams === 0) {
-                inputColumns.push('requestParams')
-                checkParams = 1
-            }
-
-            for (var rowParams of tempParams)
-                paramStorage.push(rowParams)
-
-            Object.assign(inputLog, {
-                requestParams: JSON.stringify(paramStorage)
-            })
+        if (checkParams === 0) {
+            inputColumns.push('requestParams')
+            checkParams = 1
         }
+        Object.assign(inputLog, {
+            requestParams: JSON.stringify(request.url.query.reference)
+        })
     } catch (error) {
         console.log("\n[ERROR]  Error when parsing params\n" + error)
     }
@@ -46,23 +38,20 @@ function parsingParams(request) {
 
 function parsingAuth(request) {
     try {
-        if (request.hasOwnProperty('auth')) {
-            const authStorage = []
-
-            var authType = request.auth.type
-            const typeAuth = request.auth[authType]
-
-            if (isEmpty(typeAuth)) {
-                if (checkAuth === 0) {
-                    inputColumns.push('requestAuth')
-                    checkAuth = 1
-                }
-                for (var rowAuth of typeAuth)
-                    authStorage.push(rowAuth)
-                Object.assign(inputLog, {
-                    requestAuth: JSON.stringify(authStorage)
-                })
-            }
+        const { type } = request.auth
+        const typeAuth = request.auth[type].members
+        const keys = Object.keys(typeAuth)
+        const authStorage = []
+        if (checkAuth === 0) {
+            inputColumns.push('requestAuth')
+            checkAuth = 1
+        }
+        for (var rowAuth of keys)
+            authStorage.push(typeAuth[rowAuth])
+        if (!isEmpty(authStorage)) {
+            Object.assign(inputLog, {
+                requestAuth: JSON.stringify(authStorage)
+            })
         }
     } catch (error) {
         console.log("\n[ERROR]  Error when parsing auth\n" + error)
@@ -76,14 +65,16 @@ function parsingHeader(e) {
         responseTime,
         stream
     } = e.response
-
+    const { members } = e.request.headers
     // parsing header
     try {
-        const headerPointer = JSON.parse(JSON.stringify(e.request)).header
         var headerStorage = []
-        for (var rowHeader of headerPointer) {
-            if (rowHeader.hasOwnProperty('system') !== true)
+        for (var rowHeader of members) {
+            if (rowHeader.hasOwnProperty('system') !== true && rowHeader.hasOwnProperty('disabled') !== true) {
+                if (rowHeader.hasOwnProperty('name'))
+                    delete rowHeader.name
                 headerStorage.push(rowHeader)
+            }
         }
         if (!isEmpty(headerStorage)) {
             Object.assign(inputLog, {
