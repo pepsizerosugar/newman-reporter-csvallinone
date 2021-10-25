@@ -8,7 +8,6 @@ module.exports = {
     module: function (newman, e, log) {
         inputLog = log
         folderCount = Object.keys(newman.summary.collection.items.members).length
-
         parsingFoldername(newman)
         parsingBody(e)
         parsingEntities(newman, e)
@@ -21,7 +20,6 @@ module.exports = {
 function parsingFoldername(newman) {
     try {
         const folderStorage = newman.summary.collection.items.members
-
         if (x < folderCount) {
             caseCount = Object.keys(folderStorage[x].items.members).length
             Object.assign(inputLog, {

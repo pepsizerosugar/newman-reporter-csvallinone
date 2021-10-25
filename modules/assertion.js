@@ -7,10 +7,8 @@ module.exports = {
             assertion,
             error
         } = e
-
         parsingAssertion(err, e, assertion)
         parsingAssertionmessage(e, error)
-
         return inputLog
     }
 }
@@ -18,7 +16,6 @@ module.exports = {
 function parsingAssertion(err, e, assertion) {
     try {
         let key
-
         if (err)
             key = 'failedTest'
         else if (e.skipped)
@@ -36,7 +33,6 @@ function parsingAssertionmessage(e, error) {
     try {
         if (e.hasOwnProperty('error') && error !== null) {
             const message = error.message
-
             inputLog['assertionMessage'] = inputLog['assertionMessage'] || []
             inputLog['assertionMessage'].push(message.toString().replace(/\'/gi, ""))
         }
