@@ -1,24 +1,44 @@
 # CSV ALL-in-one newman Reporter
 <img src="./resources/logo.png" alt="">
 
-![Version](https://img.shields.io/badge/Version-0.4.3-brightgreen)
-![Version](https://img.shields.io/badge/Update-2021.09.20-blue)
+![Version](https://img.shields.io/badge/Version-0.5.1-brightgreen)
+![Version](https://img.shields.io/badge/Update-2021.10.25-blue)
 
 * CSV Result File generator module for newman.
-* This module is based on REST API Automation Test.
+* This module is based on REST API Automation Test. (JSON request, respone)
 * If you have an problem with using separted version or want more information of running test, please leave a issue at github or email.
 <br><br>
 
 ## 0. Change Log
-### version 0.4.3 (2021.09.20)
+### version 0.5.1 (2021.10.25)
 ```
-1. Fixed parsing Auth params (again)
-    1-1. parsingParams
-    1-2. parsingAuth
+1. Fixed parsing Auth params (again & again)
+    1-1. Fixed duplicate parsing betweeen parameters and auth parameters
 2. Edited parsing cURL method
-    2-1. Same as parsing other entities
-3. Edited parsing Header method
-    3-1. Remove useless name fields from parsed header entities
+    2-1. Change the data type to match the cURL syntax.
+        1. graphql
+        2. file
+        3. urlencoded
+        4. formdata
+        5. raw
+        ex) --data-raw -> --form / --urlencode...
+3. Edited parsing Body method
+    3-1. Change parsing type to match the each body type
+        1. graphql
+        2. file
+        3. urlencoded
+        4. formdata
+        5. raw
+4. Edited parsing entities methods
+    4-1. Separted each parsing entities methods
+        ex) caseName, responseTime...
+5. Edited parsing header method
+    5-1. Change to parsing with Content-Type header (for cURL)
+```
+### after version (working)
+```
+1. Refactor code for more functionality
+2. More parsing folderName in over 2 depth
 ```
 <br>
 
@@ -52,7 +72,7 @@ ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-e
 |----|--------------------|---------------------------------------------------------|---------------------------------------------------------------------|
 | 1  | collectionName     | Running Collection name                                 | Market_Billing_API                                                  |
 | 2  | environmentName    | Running Environment name                                | Billing_googleplay_test                                             |
-| 3  | folderName         | Running Folder name                                     | API_googleplay_payment                                              |
+| 3  | folderName         | Running Folder name (parsing 2 depth untill now)        | API_googleplay_payment                                              |
 | 4  | caseName           | Running TestCase name                                   | API_googleplay_payment_001                                          |
 | 5  | executedTime       | Running TestCase executed time                          | 1627552163138                                                       |
 | 6  | stopTime           | Running TestCase stop time                              | 1627552163298                                                       |
