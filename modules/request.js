@@ -44,8 +44,15 @@ function parsingParams(query) {
             inputColumns.push('requestParams')
             checkParams = 1
         }
+        const params = query.reference
+        const keys = Object.keys(params)
+        var constParams = []
+
+        for (var key of keys) {
+            constParams.push(params[key])
+        }
         Object.assign(inputLog, {
-            requestParams: JSON.stringify(query.reference)
+            requestParams: JSON.stringify(constParams)
         })
     } catch (error) {
         console.log("\n[ERROR]  Error when parsing params\n" + error)
