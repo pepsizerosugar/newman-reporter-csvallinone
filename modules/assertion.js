@@ -15,7 +15,7 @@ module.exports = {
     }
 }
 
-function parsingAssertion(err, e, assertion){
+function parsingAssertion(err, e, assertion) {
     try {
         let key
 
@@ -25,7 +25,6 @@ function parsingAssertion(err, e, assertion){
             key = 'skippedTest'
         else
             key = 'executedTest'
-
         inputLog[key] = inputLog[key] || []
         inputLog[key].push(assertion)
     } catch (error) {
@@ -33,7 +32,7 @@ function parsingAssertion(err, e, assertion){
     }
 }
 
-function parsingAssertionmessage(e, error){
+function parsingAssertionmessage(e, error) {
     try {
         if (e.hasOwnProperty('error') && error !== null) {
             const message = error.message

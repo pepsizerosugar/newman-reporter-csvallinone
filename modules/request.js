@@ -1,18 +1,35 @@
 let inputLog = {}
 let inputColumns = []
-
 var checkParams = 0
 var checkAuth = 0
+var dataType = {
+    urlencoded: "--data-urlencode",
+    formdata: "--form",
+    file: "--data-binary",
+    raw: "--data-raw",
+    graphql: "--data"
+}
 
 module.exports = {
     module: function (e, log, columns) {
         inputLog = log
         inputColumns = columns
-        const { request } = e
+        const {
+            request
+        } = e
+        const {
+            query
+        } = request.url
 
-        parsingParams(request)
-        parsingAuth(request)
+        if (request.hasOwnProperty('auth')) {
+            parsingAuth(request)
+        }
+        else if (query.toString().length > 0) {
+            parsingParams(query)
+        }
+
         parsingHeader(e)
+        parsingEntities(e)
 
         return {
             outputLog: inputLog,
@@ -21,24 +38,15 @@ module.exports = {
     }
 }
 
-function parsingParams(request) {
+function parsingParams(query) {
     try {
-        const tempParams = request.url.query
-        const paramStorage = []
-
-        if (isEmpty(tempParams)) {
-            if (checkParams === 0) {
-                inputColumns.push('requestParams')
-                checkParams = 1
-            }
-
-            for (var rowParams of tempParams)
-                paramStorage.push(rowParams)
-
-            Object.assign(inputLog, {
-                requestParams: JSON.stringify(paramStorage)
-            })
+        if (checkParams === 0) {
+            inputColumns.push('requestParams')
+            checkParams = 1
         }
+        Object.assign(inputLog, {
+            requestParams: JSON.stringify(query.reference)
+        })
     } catch (error) {
         console.log("\n[ERROR]  Error when parsing params\n" + error)
     }
@@ -46,23 +54,24 @@ function parsingParams(request) {
 
 function parsingAuth(request) {
     try {
-        if (request.hasOwnProperty('auth')) {
-            const authStorage = []
+        const {
+            type
+        } = request.auth
+        const typeAuth = request.auth[type].members
+        const keys = Object.keys(typeAuth)
+        const authStorage = []
 
-            var authType = request.auth.type
-            const typeAuth = request.auth[authType]
-
-            if (isEmpty(typeAuth)) {
-                if (checkAuth === 0) {
-                    inputColumns.push('requestAuth')
-                    checkAuth = 1
-                }
-                for (var rowAuth of typeAuth)
-                    authStorage.push(rowAuth)
-                Object.assign(inputLog, {
-                    requestAuth: JSON.stringify(authStorage)
-                })
-            }
+        if (checkAuth === 0) {
+            inputColumns.push('requestAuth')
+            checkAuth = 1
+        }
+        for (var rowAuth of keys)
+            if (rowAuth.hasOwnProperty("disabled") == false)
+                authStorage.push(typeAuth[rowAuth])
+        if (!isEmpty(authStorage)) {
+            Object.assign(inputLog, {
+                requestAuth: JSON.stringify(authStorage)
+            })
         }
     } catch (error) {
         console.log("\n[ERROR]  Error when parsing auth\n" + error)
@@ -70,36 +79,86 @@ function parsingAuth(request) {
 }
 
 function parsingHeader(e) {
-    const {
-        status,
-        code,
-        responseTime,
-        stream
-    } = e.response
-
-    // parsing header
     try {
-        const headerPointer = JSON.parse(JSON.stringify(e.request)).header
-        var headerStorage = []
-        for (var rowHeader of headerPointer) {
-            if (rowHeader.hasOwnProperty('system') !== true)
-                headerStorage.push(rowHeader)
+        const {
+            members
+        } = e.request.headers
+        var headers = []
+
+        for (var rowHeader of members) {
+            switch (rowHeader.key === 'Content-Type') {
+                case true:
+                    delete rowHeader.system
+                    headers.push(rowHeader)
+                    break;
+                case false:
+                    if (rowHeader.hasOwnProperty('system') == false && rowHeader.hasOwnProperty('disabled') == false) {
+                        headers.push(rowHeader)
+                    }
+                    break;
+            }
         }
-        if (!isEmpty(headerStorage)) {
+        if (isEmpty(headers) === false) {
             Object.assign(inputLog, {
-                requestHeader: JSON.stringify(headerStorage)
+                requestHeader: JSON.stringify(headers)
             })
         }
     } catch (error) {
         console.log("\n[ERROR]  Error when parsing header\n" + error)
+    } finally {
+        if (e.request.hasOwnProperty('body'))
+            generateCurldata(headers, e.request.body.mode)
+        else
+            generateCurldata(headers)
     }
+}
 
-    Object.assign(inputLog, {
-        responseTime,
-        responseStatus: status,
-        responseCode: code,
-        responseBody: stream.toString(),
-    })
+function generateCurldata(headers, type) {
+    try {
+        var tempBody = inputLog.requestBody
+
+        if (headers.length > 0) {
+            for (var header of headers) {
+                inputLog.curl += " \\ --header \"" + header.key + ": " + header.value + "\""
+            }
+        }
+        if (type && (tempBody && tempBody !== '{}')) {
+            if (type === "urlencoded" || type === "formdata") {
+                var temp = JSON.parse(tempBody)
+                for (const [key, value] of Object.entries(temp)) {
+                    inputLog.curl += " \\ " + dataType[type] + " \"" + key + "=" + value + "\""
+                }
+            } else {
+                inputLog.curl += " \\ " + dataType[type] + " \"" + tempBody + "\""
+            }
+        }
+    }
+    catch (error) {
+        console.log("\n[ERROR]  Error when generate curl data\n" + error)
+    } finally {
+        tempBody = ""
+    }
+}
+
+function parsingEntities(e) {
+    try {
+        const {
+            status,
+            code,
+            responseTime,
+            stream
+        } = e.response
+
+        Object.assign(inputLog, {
+            responseTime,
+            responseStatus: status,
+            responseCode: code,
+            responseBody: stream.toString(),
+        })
+    }
+    catch (error) {
+        console.log("\n[ERROR]  Error when parsing entities\n" + error)
+    }
 }
 
 var isEmpty = function (val) {
