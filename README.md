@@ -3,6 +3,7 @@
 
 ![Version](https://img.shields.io/badge/Version-0.5.1-brightgreen)
 ![Version](https://img.shields.io/badge/Update-2021.10.25-blue)
+[![CodeFactor](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone/badge)](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone)
 
 * CSV Result File generator module for newman.
 * This module is based on REST API Automation Test. (JSON request, respone)
