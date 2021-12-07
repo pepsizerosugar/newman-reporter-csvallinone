@@ -1,8 +1,8 @@
 # CSV ALL-in-one newman Reporter
 <img src="./resources/logo.png" alt="">
 
-![Version](https://img.shields.io/badge/Version-0.5.1-brightgreen)
-![Version](https://img.shields.io/badge/Update-2021.10.25-blue)
+![Version](https://img.shields.io/badge/Version-0.5.2-brightgreen)
+![Version](https://img.shields.io/badge/Update-2021.12.07-blue)
 [![CodeFactor](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone/badge)](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone)
 
 * CSV Result File generator module for newman.
@@ -11,30 +11,10 @@
 <br><br>
 
 ## 0. Change Log
-### version 0.5.1 (2021.10.25)
+### version 0.5.2 (2021.12.07)
 ```
-1. Fixed parsing Auth params (again & again)
-    1-1. Fixed duplicate parsing betweeen parameters and auth parameters
-2. Edited parsing cURL method
-    2-1. Change the data type to match the cURL syntax.
-        1. graphql
-        2. file
-        3. urlencoded
-        4. formdata
-        5. raw
-        ex) --data-raw -> --form / --urlencode...
-3. Edited parsing Body method
-    3-1. Change parsing type to match the each body type
-        1. graphql
-        2. file
-        3. urlencoded
-        4. formdata
-        5. raw
-4. Edited parsing entities methods
-    4-1. Separted each parsing entities methods
-        ex) caseName, responseTime...
-5. Edited parsing header method
-    5-1. Change to parsing with Content-Type header (for cURL)
+1. Change making cURL method for each request data type.
+2. Change refine body method for each data type format.
 ```
 ### after version (working)
 ```
@@ -99,7 +79,7 @@ ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-e
 ### 2-2. Remove unwanted columns
 * You can edit 'columns' variable in 'index.js' for remove unwanted colums.
 ```js
-const columns = [
+var columns = [
     // collection info
     'collectionName',
     'environmentName',

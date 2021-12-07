@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const progress = require('cli-progress')
 const chalk = require('chalk')
 
@@ -53,7 +52,7 @@ const CSV = { stringify: (str) => { return `"${str.replace(/"/g, '""')}"` } }
 module.exports = function newmanCSVaioReporter(newman, options) {
   var bar = new progress.Bar({
 
-    format: '[INFO]  newman run progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s',
+    format: '[INFO] newman run progress |' + chalk.green('{bar}') + '| {percentage}% || Requests: {value}/{total} || ETA: {eta}s',
 
     barCompleteChar: '\u2588',
     barIncompleteChar: '\u2591',
@@ -117,7 +116,7 @@ module.exports = function newmanCSVaioReporter(newman, options) {
     })
 
     bar.stop()
-    console.log('[INFO]  CSV write complete.')
+    console.log('[INFO] CSV write complete.')
   })
 }
 

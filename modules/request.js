@@ -23,8 +23,7 @@ module.exports = {
 
         if (request.hasOwnProperty('auth')) {
             parsingAuth(request)
-        }
-        else if (query.toString().length > 0) {
+        } else if (query.toString().length > 0) {
             parsingParams(query)
         }
 
@@ -44,18 +43,11 @@ function parsingParams(query) {
             inputColumns.push('requestParams')
             checkParams = 1
         }
-        const params = query.reference
-        const keys = Object.keys(params)
-        var constParams = []
-
-        for (var key of keys) {
-            constParams.push(params[key])
-        }
         Object.assign(inputLog, {
-            requestParams: JSON.stringify(constParams)
+            requestParams: JSON.stringify(query.reference)
         })
     } catch (error) {
-        console.log("\n[ERROR]  Error when parsing params\n" + error)
+        console.log("\n[ERROR] Error when parsing params\n" + error)
     }
 }
 
@@ -72,16 +64,16 @@ function parsingAuth(request) {
             inputColumns.push('requestAuth')
             checkAuth = 1
         }
-        for (var rowAuth of keys)
-            if (rowAuth.hasOwnProperty("disabled") == false)
-                authStorage.push(typeAuth[rowAuth])
+        for (var rowAuth of keys){
+            authStorage.push(typeAuth[rowAuth])
+        }
         if (!isEmpty(authStorage)) {
             Object.assign(inputLog, {
                 requestAuth: JSON.stringify(authStorage)
             })
         }
     } catch (error) {
-        console.log("\n[ERROR]  Error when parsing auth\n" + error)
+        console.log("\n[ERROR] Error when parsing auth\n" + error)
     }
 }
 
@@ -99,7 +91,7 @@ function parsingHeader(e) {
                     headers.push(rowHeader)
                     break;
                 case false:
-                    if (rowHeader.hasOwnProperty('system') == false && rowHeader.hasOwnProperty('disabled') == false) {
+                    if (rowHeader.hasOwnProperty('system') !== true && rowHeader.hasOwnProperty('disabled') !== true) {
                         headers.push(rowHeader)
                     }
                     break;
@@ -111,7 +103,7 @@ function parsingHeader(e) {
             })
         }
     } catch (error) {
-        console.log("\n[ERROR]  Error when parsing header\n" + error)
+        console.log("\n[ERROR] Error when parsing header\n" + error)
     } finally {
         if (e.request.hasOwnProperty('body'))
             generateCurldata(headers, e.request.body.mode)
@@ -139,9 +131,8 @@ function generateCurldata(headers, type) {
                 inputLog.curl += " \\ " + dataType[type] + " \"" + tempBody + "\""
             }
         }
-    }
-    catch (error) {
-        console.log("\n[ERROR]  Error when generate curl data\n" + error)
+    } catch (error) {
+        console.log("\n[ERROR] Error when generate curl data\n" + error + "\n" + tempBody)
     } finally {
         tempBody = ""
     }
@@ -162,9 +153,8 @@ function parsingEntities(e) {
             responseCode: code,
             responseBody: stream.toString(),
         })
-    }
-    catch (error) {
-        console.log("\n[ERROR]  Error when parsing entities\n" + error)
+    } catch (error) {
+        console.log("\n[ERROR] Error when parsing entities\n" + error)
     }
 }
 
