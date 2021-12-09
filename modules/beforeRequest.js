@@ -1,13 +1,12 @@
 let inputLog = {}
 var x = 0
 var y = 0
-var folderCount
 var caseCount
 
 module.exports = {
     module: function (newman, e, log) {
         inputLog = log
-        folderCount = Object.keys(newman.summary.collection.items.members).length
+
         parsingFoldername(newman)
         parsingBody(e)
         parsingEntities(newman, e)
@@ -20,6 +19,8 @@ module.exports = {
 function parsingFoldername(newman) {
     try {
         const folderStorage = newman.summary.collection.items.members
+        const folderCount = Object.keys(newman.summary.collection.items.members).length
+
         if (x < folderCount) {
             caseCount = Object.keys(folderStorage[x].items.members).length
             Object.assign(inputLog, {
@@ -31,7 +32,7 @@ function parsingFoldername(newman) {
             }
         }
     } catch (error) {
-        console.log('\n[ERROR]  Error when parsing folder name\n' + error)
+        console.log('\n[ERROR] Error when parsing folder name\n' + error)
     }
 }
 
@@ -45,42 +46,54 @@ function parsingBody(e) {
             const tempBody = request.body
             const bodyType = request.body.mode
             const tempModebody = tempBody[bodyType]
-
+            const parseTempbody = JSON.parse(JSON.stringify(tempBody))
+            const parseTempModebody = JSON.parse(JSON.stringify(tempModebody))
             switch (bodyType) {
                 case "graphql":
-                    var temp = JSON.parse(JSON.stringify(tempBody)).graphql
+                    var temp = parseTempbody.graphql
                     Object.assign(inputLog, {
-                        requestBody: JSON.stringify(temp).replace(/(^"|"$)|\\r\\n|\\r|\\n/gi, "")
+                        requestBody: JSON.stringify(temp).replace(/(^"|"$)|\\r\\n|\\r|\\n|\\t/gi, "")
                     })
                     break;
                 case "file":
-                    var temp = JSON.parse(JSON.stringify(tempBody)).file.src
+                    var temp = parseTempbody.file.src
                     Object.assign(inputLog, {
                         requestBody: temp
                     })
                     break;
                 case "urlencoded":
                 case "formdata":
-                    var temp = JSON.parse(JSON.stringify(tempModebody))
-                    var jsonObject = new Object
-                    for (const entities of temp) {
-                        if (entities.hasOwnProperty("disabled") == false)
-                            jsonObject[entities.key] = entities.value
+                    var temp = parseTempModebody
+                    if (temp.length > 0) {
+                        var jsonObject = new Object
+                        for (const entities of temp) {
+                            if (entities.hasOwnProperty('disabled') !== true){
+                                switch(bodyType){
+                                    case "urlencoded":
+                                        jsonObject[entities.key] = entities.value
+                                        break;
+                                    case "formdata":
+                                        jsonObject[entities.key] = entities.src
+                                        break;
+                                }
+                            } 
+                        }
+                        if (Object.keys(jsonObject).length > 0) {
+                            Object.assign(inputLog, {
+                                requestBody: JSON.stringify(jsonObject).replace(/(^"|"$)|\\r\\n|\\r|\\n|\\t/gi, "")
+                            })
+                        }
                     }
-                    Object.assign(inputLog, {
-                        requestBody: JSON.stringify(jsonObject).replace(/(^"|"$)|\\r\\n|\\r|\\n/gi, "")
-                    })
                     break;
                 default:
                     Object.assign(inputLog, {
-                        requestBody: JSON.stringify(tempModebody).replace(/(^"|"$)|\\r\\n|\\r|\\n/gi, "")
+                        requestBody: parseTempModebody.replace(/(^"|"$)|\\r\\n|\\r|\\n|\\t/gi, "")
                     })
                     break;
             }
         }
-    }
-    catch (error) {
-        console.log('\n[ERROR]  Error when parsing reqeust body\n' + error)
+    } catch (error) {
+        console.log('\n[ERROR] Error when parsing reqeust body\n' + error)
     }
 }
 
@@ -103,9 +116,8 @@ function parsingEntities(newman, e) {
             requestUrl: url,
             iteration: cursor.iteration + 1,
         })
-    }
-    catch (error) {
-        console.log("\n[ERROR]  Error when parsing entities\n" + error)
+    } catch (error) {
+        console.log("\n[ERROR] Error when parsing entities\n" + error)
     }
 }
 
@@ -121,6 +133,6 @@ function generateCurlurl(e) {
             curl
         })
     } catch (error) {
-        console.log('\n[ERROR]  Error when generate curl url\n' + error)
+        console.log('\n[ERROR] Error when generate curl url\n' + error)
     }
 }
