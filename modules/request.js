@@ -64,7 +64,7 @@ function parsingAuth(request) {
             inputColumns.push('requestAuth')
             checkAuth = 1
         }
-        for (var rowAuth of keys){
+        for (var rowAuth of keys) {
             authStorage.push(typeAuth[rowAuth])
         }
         if (!isEmpty(authStorage)) {
@@ -85,16 +85,18 @@ function parsingHeader(e) {
         var headers = []
 
         for (var rowHeader of members) {
-            switch (rowHeader.key === 'Content-Type') {
-                case true:
-                    delete rowHeader.system
-                    headers.push(rowHeader)
-                    break;
-                case false:
-                    if (rowHeader.hasOwnProperty('system') !== true && rowHeader.hasOwnProperty('disabled') !== true) {
+            if (!rowHeader.hasOwnProperty('disabled')) {
+                switch (rowHeader.key === 'Content-Type') {
+                    case true:
+                        delete rowHeader.system
                         headers.push(rowHeader)
-                    }
-                    break;
+                        break;
+                    case false:
+                        if (rowHeader.hasOwnProperty('system') !== true) {
+                            headers.push(rowHeader)
+                        }
+                        break;
+                }
             }
         }
         if (isEmpty(headers) === false) {

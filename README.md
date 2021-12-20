@@ -1,8 +1,8 @@
 # CSV ALL-in-one newman Reporter
 <img src="./resources/logo.png" alt="">
 
-![Version](https://img.shields.io/badge/Version-0.5.2-brightgreen)
-![Version](https://img.shields.io/badge/Update-2021.12.07-blue)
+![Version](https://img.shields.io/badge/Version-0.5.3-brightgreen)
+![Version](https://img.shields.io/badge/Update-2021.12.20-blue)
 [![CodeFactor](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone/badge)](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone)
 
 * CSV Result File generator module for newman.
@@ -11,15 +11,9 @@
 <br><br>
 
 ## 0. Change Log
-### version 0.5.2 (2021.12.07)
+### version 0.5.3 (2021.12.20)
 ```
-1. Change making cURL method for each request data type.
-2. Change refine body method for each data type format.
-```
-### after version (working)
-```
-1. Refactor code for more functionality
-2. More parsing folderName in over 2 depth
+1. Fixed parsing disabled header
 ```
 <br>
 

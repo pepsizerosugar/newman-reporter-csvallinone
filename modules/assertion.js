@@ -25,7 +25,7 @@ function parsingAssertion(err, e, assertion) {
         inputLog[key] = inputLog[key] || []
         inputLog[key].push(assertion)
     } catch (error) {
-        console.log('\n[ERROR]  Error when parsing assertion\n' + error)
+        console.log('\n[ERROR] Error when parsing assertion\n' + error)
     }
 }
 
@@ -37,6 +37,6 @@ function parsingAssertionmessage(e, error) {
             inputLog['assertionMessage'].push(message.toString().replace(/\'/gi, ""))
         }
     } catch (err) {
-        console.log("\n[ERROR]  Error when parsing assertionMessage\n" + err)
+        console.log("\n[ERROR] Error when parsing assertionMessage\n" + err)
     }
 }
