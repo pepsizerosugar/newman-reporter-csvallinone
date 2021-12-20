@@ -7,7 +7,7 @@
 
 * CSV Result File generator module for newman.
 * This module is based on REST API Automation Test. (JSON request, respone)
-* If you have an problem with using separted version or want more information of running test, please leave a issue at github or email.
+* If you have a problem with using separted version or want more information of running test, please leave a issue at github or email.
 <br><br>
 
 ## 0. Change Log
