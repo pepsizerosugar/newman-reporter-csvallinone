@@ -1,7 +1,7 @@
 # CSV ALL-in-one newman Reporter
 <img src="./resources/logo.png" alt="">
 
-![Version](https://img.shields.io/badge/Version-0.5.3-brightgreen)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/pepsizerosugar/newman-reporter-csvallinone?color=g)
 ![Version](https://img.shields.io/badge/Update-2021.12.20-blue)
 [![CodeFactor](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone/badge)](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone)
 
