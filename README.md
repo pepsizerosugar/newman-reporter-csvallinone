@@ -3,7 +3,7 @@
 <img src="./resources/logo.png" alt="">
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/pepsizerosugar/newman-reporter-csvallinone?color=g)
-![Version](https://img.shields.io/badge/Update-2024.01.15-blue)
+![Version](https://img.shields.io/badge/Update-2024.02.15-blue)
 [![CodeFactor](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone/badge)](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone)
 
 * CSV Result File generator module for newman.
@@ -14,7 +14,7 @@
 
 ## 0. Change Log
 
-### version 0.6.0 (2024.01.15)
+### version 0.6.0 (2024.02.15)
 
 ```
 1. Fixed parsing empty urlencoded body.
