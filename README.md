@@ -3,7 +3,7 @@
 <img src="./resources/logo.png" alt="">
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/pepsizerosugar/newman-reporter-csvallinone?color=g)
-![Version](https://img.shields.io/badge/Update-2024.02.15-blue)
+![Version](https://img.shields.io/badge/Update-2025.09.01-blue)
 [![CodeFactor](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone/badge)](https://www.codefactor.io/repository/github/pepsizerosugar/newman-reporter-csvallinone)
 
 * CSV Result File generator module for newman.
@@ -14,10 +14,23 @@
 
 ## 0. Change Log
 
+### version 0.7.0 (2025.09.01)
+
+```
+1. Added progress tracking with ETA for test execution
+2. Improved handling of different request types (urlencoded, formdata, raw, file, graphql)
+3. Enhanced error handling and logging
+4. Added TypeScript type definitions for better code maintainability
+5. Improved cURL command generation
+6. Better handling of request parameters and headers
+7. Added support for nested folder structures
+```
+
 ### version 0.6.0 (2024.02.15)
 
 ```
-1. Fixed parsing empty urlencoded body.
+1. Fixed parsing empty urlencoded body
+2. Improved error handling for malformed requests
 ```
 
 <br>
@@ -26,21 +39,48 @@
 
 ### 1-1. Installation
 
-```
-1. npm i -g newman-reporter-csvallinone
-2. https://www.npmjs.com/package/newman-reporter-csvallinone
+```bash
+# Install globally
+npm install -g newman-reporter-csvallinone
+
+# Or install as devDependency in your project
+npm install --save-dev newman-reporter-csvallinone
 ```
 
-### 1-2. How to use
+### 1-2. Features
 
+- Real-time progress tracking with ETA
+- Support for all request types (JSON, form-data, URL-encoded, raw, file uploads, GraphQL)
+- Detailed test execution reports
+- cURL command generation for easy request reproduction
+- Support for nested folder structures
+- Configurable output columns
+- Lightweight and fast
+
+### 1-3. How to use
+
+Basic usage:
+```bash
+newman run collection.json -e environment.json -r csvallinone
 ```
-1. You can use this module like any other newman reporter.
-2. Open cmd or bash.
-3. Type newman cli and add line down below.
-4. '-r csvallinone'
-	ex) newman run collection -e environment -r csvallinone
-5. Default CSV save location. (./$User/newman)
+
+With options:
+```bash
+newman run collection.json \
+  -e environment.json \
+  -r csvallinone \
+  --reporter-csvallinone-export ./results/report.csv \
+  --reporter-csvallinone-progress true \
+  --reporter-csvallinone-folderPath full
 ```
+
+### 1-4. Options
+
+- `--reporter-csvallinone-export <path>`: Specify custom output path for CSV file
+- `--reporter-csvallinone-progress <true|false>`: Enable/disable progress bar (default: true)
+- `--reporter-csvallinone-folderPath <last|full>`: Control folder path display (default: 'last')
+  - `last`: Show only the immediate parent folder
+  - `full`: Show full folder path
 
 ### 1-3. Export Option
 
@@ -91,7 +131,7 @@ ex) newman run collection -e environment -r csvallinone --reporter-csvallinone-e
 
 * You can edit 'columns' variable in 'index.js' for remove unwanted colums.
 
-```js
+```javascript
 let columns = [
   // collection info
   'collectionName',
