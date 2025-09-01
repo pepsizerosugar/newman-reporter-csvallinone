@@ -1,5 +1,5 @@
 {
-  "version": "0.6.0",
+  "version": "0.7.0",
   "license": "MIT",
   "description": "CSV Result File generator module for newman",
   "name": "newman-reporter-csvallinone",
@@ -26,15 +26,5 @@
     "Test",
     "Automation"
   ],
-  "main": "index.js",
-  "dependencies": {
-    "chalk": "^4.1.0",
-    "cli-progress": "^3.8.2"
-  },
-  "devDependencies": {
-    "standard": "^14.3.3",
-    "chalk": "^4.1.0",
-    "cli-progress": "^3.8.2",
-    "lodash": "^4.17.20"
-  }
+  "main": "index.js"
 }
