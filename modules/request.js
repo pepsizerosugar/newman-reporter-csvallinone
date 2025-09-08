@@ -1,80 +1,209 @@
-function parseParams (query) {
-  return JSON.stringify(query.reference)
+const logger = require('../lib/logger')
+const { listify, isEmpty, escapeSingleQuotes } = require('../lib/utils')
+
+const dataType = {
+  urlencoded: '--data-urlencode',
+  formdata: '--form',
+  file: '--data-binary',
+  raw: '--data-raw',
+  graphql: '--data'
 }
 
-function parseAuth (request) {
-  const { type, members } = request.auth
-  const authItems = members.map(member => member[type])
-  return JSON.stringify(authItems.filter(item => item))
-}
+/**
+ * Request/response parser.
+ * - Parses headers/auth, appends body to cURL, and captures response meta.
+ *
+ * @param {Object} e            - Event payload containing `{ request, response }`.
+ * @param {string[]} columns    - Current CSV columns array.
+ * @param {Object} currentRow   - Current accumulated row (uses curl/requestBody).
+ * @param {{curlMultiline?: boolean}} [options]
+ * @returns {{rowPatch: Object, columns: string[]}}
+ */
+function parseRequest(e, columns, currentRow, options) {
+  const cols = Array.isArray(columns) ? columns.slice() : []
+  const rowPatch = {}
 
-function parseHeaders (headers) {
-  return JSON.stringify(headers.filter(header => !header.disabled && !header.system && header.key !== 'Content-Type'))
-}
-
-function parseRequestBody (request) {
-  if (!request.body || Object.keys(request.body).length === 0) return ''
-  const { mode, graphql, file } = request.body
-  switch (mode) {
-    case 'graphql':
-      return JSON.stringify(graphql)
-    case 'file':
-      return file.src
-    case 'urlencoded':
-    case 'formdata':
-      const params = request.body[mode].filter(param => !param.disabled).map(param => `${param.key}=${param.value || param.src}`)
-      return params.length === 0 ? '' : JSON.stringify(params)
-    default:
-      return ''
+  let request
+  try {
+    request = e.request
+  } catch (err) {
+    logger.error(err)
   }
-}
 
-function generateCurlData (headers, requestBody, bodyMode) {
-  let curlData = headers.map(header => ` --header "${header.key}: ${header.value}"`).join('')
-  if (requestBody && bodyMode) {
-    switch (bodyMode) {
-      case 'urlencoded':
-      case 'formdata':
-        const params = JSON.parse(requestBody)
-        params.forEach(param => {
-          curlData += ` --data-urlencode "${param}"`
-        })
-        break
-      case 'file':
-        curlData += ` --data-binary "${requestBody}"`
-        break
-      default:
-        curlData += ` --data-raw "${requestBody}"`
-        break
+  // Params
+  try {
+    const url = request.url
+    const query = url && url.query
+    let value
+
+    const arr = listify(query)
+    if (arr.length) {
+      value = arr
+        .filter((m) => m && m.disabled !== true)
+        .map((m) => ({ key: m.key, value: m.value }))
     }
+
+    if (value && value.length) {
+      if (!cols.includes('requestParams')) cols.push('requestParams')
+      rowPatch.requestParams = JSON.stringify(value)
+    }
+  } catch (err) {
+    logger.error(err)
   }
-  return curlData
+
+  // Auth
+  try {
+    if (request.hasOwnProperty('auth') && request.auth && request.auth.type && request.auth[request.auth.type]) {
+      const authArr = listify(request.auth[request.auth.type]).filter((m) => m && m.disabled !== true)
+      if (!isEmpty(authArr)) {
+        if (!cols.includes('requestAuth')) cols.push('requestAuth')
+        rowPatch.requestAuth = JSON.stringify(authArr)
+      }
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+
+  // Headers
+  try {
+    let headers = []
+    const members = listify(request.headers)
+    for (const h of members) {
+      const disabled = (h && h.disabled === true)
+      if (disabled) continue
+
+      const keyLower = String(h.key || '').toLowerCase()
+      const isContentType = keyLower === 'content-type'
+      const isSystem = Object.prototype.hasOwnProperty.call(h, 'system') && h.system === true
+      if (isSystem && isContentType) continue
+
+      headers.push({ key: h.key, value: h.value })
+    }
+
+    if (!isEmpty(headers)) {
+      rowPatch.requestHeader = JSON.stringify(headers)
+    }
+
+    // cURL build (append headers/body)
+    try {
+      const body = request.body
+      const mode = body && body.mode
+      const seed = (currentRow && currentRow.curl) ? currentRow.curl : ''
+      const tempBody = currentRow && currentRow.requestBody
+      const newCurl = buildCurl(seed, headers, mode, body, tempBody, { multiline: !!(options && options.curlMultiline) })
+      if (newCurl) rowPatch.curl = newCurl
+    } catch (err) {
+      logger.error(err)
+    }
+  } catch (err) {
+    logger.error(err)
+  }
+
+  // Response
+  try {
+    const { status, code, responseTime, stream } = e.response
+    rowPatch.responseTime = responseTime
+    rowPatch.responseStatus = status
+    rowPatch.responseCode = code
+    rowPatch.responseBody = stream.toString()
+  } catch (err) {
+    logger.error(err)
+  }
+
+  return { rowPatch, columns: cols }
 }
 
-module.exports = function requestModule (e, log, columns) {
-  const { request, response } = e
-  const requestParams = request.url.query ? parseParams(request.url.query) : ''
-  const requestAuth = request.auth ? parseAuth(request) : ''
-  const requestHeader = parseHeaders(request.headers.members)
-  const requestBody = parseRequestBody(request)
-  const curlData = generateCurlData(request.headers.members, requestBody, request.body && request.body.mode)
+module.exports = { parseRequest, buildCurl }
 
-  const updatedLog = Object.assign({}, log, {
-    requestParams,
-    requestAuth,
-    requestHeader,
-    responseBody: response.stream.toString(),
-    responseTime: response.responseTime,
-    responseStatus: response.status,
-    responseCode: response.code,
-    requestMethod: request.method,
-    requestUrl: request.url.toString(),
-    requestBody,
-    curl: `curl --location --request ${request.method} "${request.url.toString()}"${curlData}`
-  })
+/**
+ * cURL data builder (pure).
+ *
+ * @param {string} seed            - Existing cURL seed
+ * @param {Array} headers          - Array of `{key,value}`
+ * @param {string} type            - SDK body mode
+ * @param {Object} body            - SDK RequestBody
+ * @param {string|undefined} tempBody - row.requestBody (fallback for urlencoded/formdata)
+ * @param {{multiline?: boolean}} [opts]
+ * @returns {string}
+ */
+function buildCurl(seed, headers, type, body, tempBody, opts) {
+  try {
+    let curl = String(seed || '')
+    const multiline = !!(opts && opts.multiline)
+    const addSegment = (seg) => {
+      if (!seg) return
+      if (multiline) {
+        curl += ' \\\n  ' + seg
+      } else {
+        curl += ' ' + seg
+      }
+    }
 
-  return {
-    outputLog: updatedLog,
-    outputColumns: Array.from(new Set(columns.concat(['requestParams', 'requestAuth'])))
+    // Append headers
+    headers = Array.isArray(headers) ? headers : []
+    for (const header of headers) {
+      const key = String(header.key || '')
+      const value = String(header.value || '')
+      const hv = escapeSingleQuotes(key + ': ' + value)
+      addSegment(`--header '${hv}'`)
+    }
+
+    // Append body
+    if (type && dataType[type]) {
+      if (type === 'urlencoded') {
+        let arr = listify(body && (body.urlencoded ?? body[type]))
+        if (!arr.length && tempBody) {
+          try {
+            const obj = JSON.parse(tempBody)
+            arr = Object.keys(obj).map((k) => ({ key: k, value: obj[k] }))
+          } catch (_) { /* ignore */ }
+        }
+
+        for (const ent of arr) {
+          if (ent && ent.disabled === true) continue
+          const kv = escapeSingleQuotes(String(ent.key) + '=' + String(ent.value ?? ''))
+          addSegment(`${dataType[type]} '${kv}'`)
+        }
+      } else if (type === 'formdata') {
+        let arr = listify(body && (body.formdata ?? body[type]))
+        if (!arr.length && tempBody) {
+          try {
+            const obj = JSON.parse(tempBody)
+            arr = Object.keys(obj).map((k) => ({ key: k, value: obj[k], type: 'text' }))
+          } catch (_) { /* ignore */ }
+        }
+
+        for (const ent of arr) {
+          if (ent && ent.disabled === true) continue
+
+          if (ent.type === 'file') {
+            const src = ent.src
+            if (Array.isArray(src)) {
+              for (const p of src) {
+                const formVal = escapeSingleQuotes(String(ent.key) + '=@' + String(p))
+                addSegment(`${dataType[type]} '${formVal}'`)
+              }
+            } else if (typeof src === 'string') {
+              const formVal = escapeSingleQuotes(String(ent.key) + '=@' + src)
+              addSegment(`${dataType[type]} '${formVal}'`)
+            } else {
+              const formVal = escapeSingleQuotes(String(ent.key) + '=' + String(ent.value ?? ''))
+              addSegment(`${dataType[type]} '${formVal}'`)
+            }
+          } else {
+            const formVal = escapeSingleQuotes(String(ent.key) + '=' + String(ent.value ?? ''))
+            addSegment(`${dataType[type]} '${formVal}'`)
+          }
+        }
+      } else if (tempBody && tempBody !== '{}') {
+        const safeBody = escapeSingleQuotes(String(tempBody))
+        addSegment(`${dataType[type]} '${safeBody}'`)
+      }
+    }
+
+    return curl
+  } catch (error) {
+    logger.error('Error when generate curl data')
+    return seed
   }
 }

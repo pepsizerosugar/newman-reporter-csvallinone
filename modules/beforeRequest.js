@@ -1,56 +1,180 @@
-let caseIndex = 0
-let folderIndex = 0
+const logger = require('../lib/logger')
+const { listify } = require('../lib/utils')
 
-function parseFolderName (newman) {
-  const folder = newman.summary.collection.items.members[folderIndex]
-  const caseCount = Object.keys(folder.items.members).length
-  const folderName = folder.name
-  caseIndex = (++caseIndex) % caseCount
-  if (caseIndex === 0) folderIndex++
-  return folderName
+/**
+ * Pre-request parser module.
+ * - Builds folder path, request body, base meta, and cURL seed values.
+ *
+ * @param {Object} newman   - Newman emitter (contains collection/environment info in summary).
+ * @param {Object} e        - Event payload including `{ item, request, cursor }`.
+ * @param {Object} log      - Accumulated log object.
+ * @param {Object} [options]- Reporter options. Supports 'folderPath' ('last'|'full').
+ * @returns {Object}        - Updated log object.
+ */
+
+/**
+ * Pre-request parser (pure function).
+ * - Returns partial row including folder path, request body, base meta, and cURL seed.
+ */
+function parseBeforeRequest(newman, e, options) {
+  const meta = parsingEntities(newman, e)
+  const folderName = parsingFoldername(newman, e, options)
+  const requestBody = parsingBody(e)
+  const curl = generateCurlUrl(e)
+
+  const patch = Object.assign({}, meta, { folderName, curl })
+  if (typeof requestBody === 'string') {
+    patch.requestBody = requestBody
+  }
+
+  return patch
 }
 
-function parseRequestBody (request) {
-  if (!request.hasOwnProperty('body')) return ''
-  const { mode, graphql, file } = request.body
-  switch (mode) {
-    case 'graphql':
-      return JSON.stringify(graphql).replace(/(^"|"$)|\\r\\n|\\r|\\n|\\t/gi, '')
-    case 'file':
-      return file.src
-    case 'urlencoded':
-    case 'formdata':
-      const params = request.body[mode]
-      const parsedParams = params.filter(param => !param.disabled).map(param => ({
-        [param.key]: param.src || param.value
-      }))
-      return JSON.stringify(Object.assign({}, ...parsedParams)).replace(/(^"|"$)|\\r\\n|\\r|\\n|\\t/gi, '')
-    default:
-      return JSON.stringify(mode).replace(/(^"|"$)|\\r\\n|\\r|\\n|\\t/gi, '')
+module.exports = { parseBeforeRequest }
+
+/**
+ * Parse folder path.
+ */
+function parsingFoldername(newman, e, options) {
+  try {
+    const item = e && e.item
+    if (!item || typeof item.parent !== 'function') {
+      return ''
+    }
+
+    /** Collect folder chain in leaf -> root order */
+    let parent = item.parent()
+    const names = []
+    while (parent && typeof parent.parent === 'function') {
+      names.push(parent.name)
+      const next = parent.parent()
+      parent = next
+      if (!parent || typeof parent.parent !== 'function') break
+    }
+
+    const modeRaw = (options && (options.folderPath || options['folder-path'])) || 'last'
+    const mode = String(modeRaw).toLowerCase()
+
+    let folderName = ''
+    if (names.length > 0) {
+      if (mode === 'full' || mode === 'fullpath' || mode === 'path') {
+        // Join in root -> leaf order
+        folderName = names.slice().reverse().join(' > ')
+      } else {
+        // Deepest (leaf) folder name
+        folderName = names[0]
+      }
+    }
+
+    return folderName
+  } catch (error) {
+    logger.error('Error when parsing folder name')
+    return ''
   }
 }
 
-function generateCurlUrl (request) {
-  const { method, url } = request
-  return `curl --location --request ${method} "${url}"`
+/**
+ * Parse request body and set `requestBody`.
+ * For each mode, keep raw content or normalized JSON string.
+ */
+function parsingBody(e) {
+  try {
+    const { request } = e
+    if (request.hasOwnProperty('body')) {
+      const tempBody = request.body
+      const bodyType = tempBody.mode
+      const tempModeBody = tempBody[bodyType]
+
+      switch (bodyType) {
+        case 'graphql': {
+          // Preserve GraphQL {query, variables}
+          const temp = tempBody.graphql
+          return JSON.stringify(temp)
+        }
+        case 'file': {
+          // For file mode, keep path(s) only
+          const temp = tempBody.file && tempBody.file.src
+          return (typeof temp === 'string') ? JSON.stringify(temp || '') : ''
+        }
+        case 'urlencoded':
+        case 'formdata': {
+          // urlencoded/formdata: exclude disabled entries; differentiate text/file
+          const arr = listify(tempModeBody)
+          const jsonObject = {}
+          for (const ent of arr) {
+            if (ent && ent.disabled !== true) {
+              if (bodyType === 'urlencoded') {
+                jsonObject[ent.key] = ent.value
+              } else {
+                // formdata: file/text differentiation
+                if (ent.type === 'file') {
+                  jsonObject[ent.key] = ent.src
+                } else {
+                  jsonObject[ent.key] = ent.value
+                }
+              }
+            }
+          }
+          if (Object.keys(jsonObject).length > 0) {
+            return JSON.stringify(jsonObject)
+          }
+          return undefined
+        }
+        default: {
+          // For raw-like modes, keep original content
+          const raw = (typeof tempModeBody === 'string') ? tempModeBody : JSON.stringify(tempModeBody)
+          return raw
+        }
+      }
+    }
+  } catch (error) {
+    logger.error('Error when parsing request body')
+  }
+
+  return undefined
 }
 
-module.exports = function beforeRequest (newman, e, log) {
-  const { cursor, item, request } = e
-  const { method, url } = request
-  const folderName = parseFolderName(newman)
-  const requestBody = parseRequestBody(request)
-  const curl = generateCurlUrl(request)
+/**
+ * Parse base metadata and accumulate into log.
+ */
+function parsingEntities(newman, e) {
+  try {
+    const {
+      cursor,
+      item
+    } = e
+    const {
+      method,
+      url
+    } = e.request
 
-  return Object.assign({}, log, {
-    folderName,
-    caseName: item.name,
-    collectionName: newman.summary.collection.name,
-    environmentName: newman.summary.environment.name,
-    requestMethod: method,
-    requestUrl: url,
-    iteration: cursor.iteration + 1,
-    requestBody,
-    curl
-  })
+    return {
+      collectionName: newman.summary.collection.name,
+      environmentName: newman.summary.environment.name,
+      caseName: item.name,
+      requestMethod: method,
+      requestUrl: url,
+      iteration: cursor.iteration + 1
+    }
+  } catch (error) {
+    logger.error('Error when parsing entities')
+    return {}
+  }
+}
+
+/**
+ * Generate cURL seed string.
+ * - Escape single quotes inside URL.
+ */
+function generateCurlUrl(e) {
+  try {
+    const { method, url } = e.request
+    // URL is an SDK object; convert to string
+    const urlStr = (url && typeof url.toString === 'function') ? url.toString() : String(url)
+    const curl = 'curl --location --request ' + method + " '" + urlStr.replace(/'/g, "\\'") + "'"
+    return curl
+  } catch (error) {
+    logger.error('Error when generate curl url')
+    return ''
+  }
 }
