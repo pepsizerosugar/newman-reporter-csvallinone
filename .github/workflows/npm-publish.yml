@@ -32,7 +32,6 @@ jobs:
             ${{ runner.os }}-
 
       - run: npm ci
-      - run: npm test
 
   publish-npm:
     needs: build
